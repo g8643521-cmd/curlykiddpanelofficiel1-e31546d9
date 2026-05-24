@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from "react";
-import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check } from "lucide-react";
+import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchHistoryItem } from "@/hooks/useSearchHistory";
 import { formatDistanceToNow } from "date-fns";
@@ -143,6 +143,17 @@ const HistoryItem = memo(({
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         )}
+        <a
+          href={`/embed/${item.query}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-secondary/60 transition-all opacity-0 group-hover:opacity-100"
+          title="Open server page"
+          aria-label="Open server page"
+        >
+          <ArrowUpRight className="w-3.5 h-3.5" />
+        </a>
         <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-1">
           Search again
         </span>
