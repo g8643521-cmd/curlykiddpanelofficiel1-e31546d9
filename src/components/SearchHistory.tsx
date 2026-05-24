@@ -13,7 +13,7 @@ interface SearchHistoryProps {
   isLoading: boolean;
   onSelect: (serverCode: string) => Promise<void> | void;
   onClear: () => void;
-  onRemove?: (id: string) => Promise<boolean> | void;
+  onRemove?: (id: string) => void | Promise<void> | Promise<boolean>;
 }
 
 const HistoryItem = memo(({
