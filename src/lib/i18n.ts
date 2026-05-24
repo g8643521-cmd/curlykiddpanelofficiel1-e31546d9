@@ -237,6 +237,15 @@ const translations: Record<string, Record<Lang, string>> = {
   "favorites.title": { en: "Favorites", da: "Favoritter" },
   "favorites.empty": { en: "No favorites yet", da: "Ingen favoritter endnu" },
   "favorites.empty_desc": { en: "Search for a server and click the star to add it", da: "Søg efter en server og klik på stjernen for at tilføje den" },
+  "favorites.empty_title": { en: "No favorite servers yet", da: "Ingen favoritservere endnu" },
+  "favorites.empty_desc2": { en: "Save frequently used servers for faster access and quick monitoring.", da: "Gem ofte brugte servere for hurtigere adgang og overvågning." },
+  "favorites.browse_servers": { en: "Browse Servers", da: "Gennemse servere" },
+  "favorites.add_manually": { en: "Add manually", da: "Tilføj manuelt" },
+  "favorites.tip": { en: "Tip: Use the star icon on any server lookup result to save it here for instant access.", da: "Tip: Brug stjernen på ethvert serveropslag for at gemme det her." },
+  "favorites.members": { en: "members", da: "medlemmer" },
+  "favorites.online": { en: "Online", da: "Online" },
+  "favorites.offline": { en: "Offline", da: "Offline" },
+  "favorites.last_scanned": { en: "Last scanned", da: "Sidst scannet" },
 
   // ── Search History ──
   "history.title": { en: "Recent Searches", da: "Seneste søgninger" },
