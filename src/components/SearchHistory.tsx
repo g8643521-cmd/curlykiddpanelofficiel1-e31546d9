@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from "react";
-import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check } from "lucide-react";
+import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchHistoryItem } from "@/hooks/useSearchHistory";
 import { formatDistanceToNow } from "date-fns";
