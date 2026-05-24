@@ -222,6 +222,7 @@ const Dashboard = () => {
                 isLoading={historyLoading}
                 onSelect={handleServerSelect}
                 onClear={clearHistory}
+                onRemove={removeHistoryItem}
               />
               <Suspense fallback={<div className="animate-pulse h-48 bg-muted/10 rounded-xl" />}>
                 <LatestMods />
