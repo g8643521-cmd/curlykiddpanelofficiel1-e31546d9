@@ -1,11 +1,12 @@
 import { memo, useState, useCallback } from "react";
-import { History, Server, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchHistoryItem } from "@/hooks/useSearchHistory";
 import { formatDistanceToNow } from "date-fns";
 import { stripColorCodes } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useServerIcon } from "@/hooks/useServerIcon";
+import { toast } from "@/hooks/use-toast";
 
 interface SearchHistoryProps {
   history: SearchHistoryItem[];
@@ -14,61 +15,116 @@ interface SearchHistoryProps {
   onClear: () => void;
 }
 
-const HistoryItem = memo(({ 
-  item, 
+const HistoryItem = memo(({
+  item,
   onSelect,
   isSelecting,
-  onSelectStart
-}: { 
-  item: SearchHistoryItem; 
+  onSelectStart,
+}: {
+  item: SearchHistoryItem;
   onSelect: (code: string) => Promise<void> | void;
   isSelecting: boolean;
   onSelectStart: (id: string) => void;
 }) => {
   const { iconUrl } = useServerIcon(item.query);
+  const [copied, setCopied] = useState(false);
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isSelecting) return;
-    onSelectStart(item.id);
-    void onSelect(item.query);
-  }, [item.query, item.id, onSelect, onSelectStart, isSelecting]);
+  const displayName = stripColorCodes(
+    item.search_type && item.search_type !== "server" ? item.search_type : item.query
+  );
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent | React.KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isSelecting) return;
+      onSelectStart(item.id);
+      void onSelect(item.query);
+    },
+    [item.query, item.id, onSelect, onSelectStart, isSelecting]
+  );
+
+  const handleCopy = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        await navigator.clipboard.writeText(`cfx.re/join/${item.query}`);
+        setCopied(true);
+        toast({ title: "Copied", description: `cfx.re/join/${item.query}` });
+        setTimeout(() => setCopied(false), 1500);
+      } catch {
+        /* noop */
+      }
+    },
+    [item.query]
+  );
 
   return (
-    <button
-      type="button"
-      className={`flex items-center gap-3 p-3 bg-secondary/30 rounded-lg transition-colors group cursor-pointer w-full text-left hover:bg-secondary/60 hover:translate-x-1 ${isSelecting ? 'opacity-70 pointer-events-none' : ''}`}
+    <div
+      role="button"
+      tabIndex={0}
       onClick={handleClick}
-      disabled={isSelecting}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") handleClick(e);
+      }}
+      className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg border border-transparent bg-transparent hover:bg-secondary/40 hover:border-border/40 transition-colors cursor-pointer ${
+        isSelecting ? "opacity-70 pointer-events-none" : ""
+      }`}
     >
-      <div className="w-8 h-8 rounded-lg overflow-hidden bg-cyan/20 flex items-center justify-center shrink-0">
-        {isSelecting ? (
-          <Loader2 className="w-4 h-4 text-cyan animate-spin" />
-        ) : iconUrl ? (
-          <img src={iconUrl} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <Server className="w-4 h-4 text-cyan" />
-        )}
+      {/* Avatar + subtle status dot */}
+      <div className="relative shrink-0">
+        <div className="w-9 h-9 rounded-md overflow-hidden bg-secondary/60 border border-border/30 flex items-center justify-center">
+          {isSelecting ? (
+            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+          ) : iconUrl ? (
+            <img src={iconUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <Server className="w-4 h-4 text-muted-foreground" />
+          )}
+        </div>
+        <span
+          aria-hidden
+          className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-card"
+        />
       </div>
+
+      {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-foreground font-medium truncate">
-          {stripColorCodes(item.search_type && item.search_type !== 'server' ? item.search_type : item.query)}
+        <p className="text-sm font-medium text-foreground truncate leading-tight">
+          {displayName}
         </p>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="font-mono">{item.query}</span>
-          <span>•</span>
-          <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+        <div className="mt-0.5 flex items-center gap-1.5 min-w-0">
+          <code className="font-mono text-[12px] text-foreground/80 truncate">
+            cfx.re/join/<span className="text-foreground">{item.query}</span>
+          </code>
+          <button
+            type="button"
+            onClick={handleCopy}
+            title="Copy CFX URL"
+            aria-label="Copy CFX URL"
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+          >
+            {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+          </button>
         </div>
+        <p className="mt-1 text-[11px] text-muted-foreground/70 truncate">
+          Searched {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+        </p>
       </div>
-      {!isSelecting && (
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-          <ExternalLink className="w-4 h-4 text-primary" />
-        </div>
-      )}
-    </button>
+
+      {/* Hover action */}
+      <div className="shrink-0 flex items-center">
+        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-1">
+          Search again
+        </span>
+        <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+      </div>
+    </div>
   );
 });
+
+HistoryItem.displayName = "HistoryItem";
 
 const SearchHistory = memo(({ history, isLoading, onSelect, onClear }: SearchHistoryProps) => {
   const { t } = useI18n();
