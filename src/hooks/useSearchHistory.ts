@@ -74,10 +74,35 @@ export const useSearchHistory = () => {
     }
   };
 
+  const removeHistoryItem = async (id: string) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) return false;
+
+      setHistory((prev) => prev.filter((item) => item.id !== id));
+
+      const { error } = await supabase
+        .from('search_history')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.session.user.id);
+
+      if (error) {
+        await fetchHistory();
+        throw error;
+      }
+      return true;
+    } catch (err) {
+      console.error("Error removing history item:", err);
+      return false;
+    }
+  };
+
   return {
     history,
     isLoading,
     refetch: fetchHistory,
     clearHistory,
+    removeHistoryItem,
   };
 };

@@ -13,6 +13,7 @@ interface SearchHistoryProps {
   isLoading: boolean;
   onSelect: (serverCode: string) => Promise<void> | void;
   onClear: () => void;
+  onRemove?: (id: string) => void | Promise<void> | Promise<boolean>;
 }
 
 const HistoryItem = memo(({
@@ -20,14 +21,17 @@ const HistoryItem = memo(({
   onSelect,
   isSelecting,
   onSelectStart,
+  onRemove,
 }: {
   item: SearchHistoryItem;
   onSelect: (code: string) => Promise<void> | void;
   isSelecting: boolean;
   onSelectStart: (id: string) => void;
+  onRemove?: (id: string) => void | Promise<void> | Promise<boolean>;
 }) => {
   const { iconUrl } = useServerIcon(item.query);
   const [copied, setCopied] = useState(false);
+  const [showRemove, setShowRemove] = useState(false);
 
   const displayName = stripColorCodes(
     item.search_type && item.search_type !== "server" ? item.search_type : item.query
@@ -60,6 +64,15 @@ const HistoryItem = memo(({
     [item.query]
   );
 
+  const handleRemove = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onRemove) void onRemove(item.id);
+    },
+    [item.id, onRemove]
+  );
+
   return (
     <div
       role="button"
@@ -68,6 +81,8 @@ const HistoryItem = memo(({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") handleClick(e);
       }}
+      onMouseEnter={() => setShowRemove(true)}
+      onMouseLeave={() => setShowRemove(false)}
       className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg border border-transparent bg-transparent hover:bg-secondary/40 hover:border-border/40 transition-colors cursor-pointer ${
         isSelecting ? "opacity-70 pointer-events-none" : ""
       }`}
@@ -113,8 +128,21 @@ const HistoryItem = memo(({
         </p>
       </div>
 
-      {/* Hover action */}
-      <div className="shrink-0 flex items-center">
+      {/* Hover actions */}
+      <div className="shrink-0 flex items-center gap-1">
+        {onRemove && (
+          <button
+            type="button"
+            onClick={handleRemove}
+            className={`p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all ${
+              showRemove ? "opacity-100" : "opacity-0"
+            }`}
+            title="Remove from history"
+            aria-label="Remove from history"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
         <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-1">
           Search again
         </span>
@@ -126,7 +154,7 @@ const HistoryItem = memo(({
 
 HistoryItem.displayName = "HistoryItem";
 
-const SearchHistory = memo(({ history, isLoading, onSelect, onClear }: SearchHistoryProps) => {
+const SearchHistory = memo(({ history, isLoading, onSelect, onClear, onRemove }: SearchHistoryProps) => {
   const { t } = useI18n();
   const [selectingId, setSelectingId] = useState<string | null>(null);
 
@@ -141,6 +169,13 @@ const SearchHistory = memo(({ history, isLoading, onSelect, onClear }: SearchHis
   const handleSelectStart = useCallback((id: string) => {
     setSelectingId(id);
   }, []);
+
+  const handleRemove = useCallback(
+    async (id: string) => {
+      if (onRemove) await onRemove(id);
+    },
+    [onRemove]
+  );
 
   if (isLoading) {
     return (
@@ -212,6 +247,7 @@ const SearchHistory = memo(({ history, isLoading, onSelect, onClear }: SearchHis
             onSelect={handleSelect}
             isSelecting={selectingId === item.id}
             onSelectStart={handleSelectStart}
+            onRemove={onRemove ? handleRemove : undefined}
           />
         ))}
       </div>

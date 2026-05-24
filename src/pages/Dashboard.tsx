@@ -34,7 +34,7 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const { isLoading, serverData, error: lookupError, errorDetails: lookupErrorDetails, lastSearchedCode, fetchServerData, clearData } = useCfxApi();
   const { favorites, isLoading: favoritesLoading, addFavorite, removeFavorite, isFavorite } = useFavorites();
-  const { history, isLoading: historyLoading, refetch: refetchHistory, clearHistory } = useSearchHistory();
+  const { history, isLoading: historyLoading, refetch: refetchHistory, clearHistory, removeHistoryItem } = useSearchHistory();
   const { 
     settings: notificationSettings, 
     permissionGranted, 
@@ -222,6 +222,7 @@ const Dashboard = () => {
                 isLoading={historyLoading}
                 onSelect={handleServerSelect}
                 onClear={clearHistory}
+                onRemove={removeHistoryItem}
               />
               <Suspense fallback={<div className="animate-pulse h-48 bg-muted/10 rounded-xl" />}>
                 <LatestMods />
