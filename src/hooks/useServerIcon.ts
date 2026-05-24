@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 const ICON_CACHE_TTL = 1000 * 60 * 60;
+const MISSING_ICON_CACHE_TTL = 1000 * 30;
 
 type IconCacheEntry = {
   url: string | null;
@@ -10,10 +11,13 @@ type IconCacheEntry = {
 const iconCache = new Map<string, IconCacheEntry>();
 const inFlightRequests = new Map<string, Promise<string | null>>();
 
-const getCacheKey = (serverCode: string) => serverCode.trim().toLowerCase();
+const getCacheKey = (serverCode: string, version?: number | string | null) => {
+  const normalizedCode = serverCode.trim().toLowerCase();
+  return version === undefined || version === null || version === "" ? normalizedCode : `${normalizedCode}:${version}`;
+};
 
-const getCachedIcon = (serverCode: string) => {
-  const key = getCacheKey(serverCode);
+const getCachedIcon = (serverCode: string, version?: number | string | null) => {
+  const key = getCacheKey(serverCode, version);
   const cached = iconCache.get(key);
 
   if (!cached) return undefined;
@@ -27,18 +31,18 @@ const getCachedIcon = (serverCode: string) => {
   return cached.url;
 };
 
-const setCachedIcon = (serverCode: string, url: string | null) => {
-  iconCache.set(getCacheKey(serverCode), {
+const setCachedIcon = (serverCode: string, url: string | null, version?: number | string | null) => {
+  iconCache.set(getCacheKey(serverCode, version), {
     url,
-    expiresAt: Date.now() + ICON_CACHE_TTL,
+    expiresAt: Date.now() + (url ? ICON_CACHE_TTL : MISSING_ICON_CACHE_TTL),
   });
 };
 
 const fetchServerIcon = async (serverCode: string, version?: number | null) => {
-  const cached = getCachedIcon(serverCode);
+  const cached = getCachedIcon(serverCode, version);
   if (cached !== undefined) return cached;
 
-  const key = getCacheKey(serverCode);
+  const key = getCacheKey(serverCode, version);
   const existingRequest = inFlightRequests.get(key);
   if (existingRequest) return existingRequest;
 
@@ -60,22 +64,22 @@ const fetchServerIcon = async (serverCode: string, version?: number | null) => {
     .then(async (resp) => {
       const contentType = resp.headers.get("content-type") || "";
       if (!contentType.includes("image")) {
-        setCachedIcon(serverCode, null);
+        setCachedIcon(serverCode, null, version);
         return null;
       }
 
       const blob = await resp.blob();
       if (blob.size < 100) {
-        setCachedIcon(serverCode, null);
+        setCachedIcon(serverCode, null, version);
         return null;
       }
 
       const url = URL.createObjectURL(blob);
-      setCachedIcon(serverCode, url);
+      setCachedIcon(serverCode, url, version);
       return url;
     })
     .catch(() => {
-      setCachedIcon(serverCode, null);
+      setCachedIcon(serverCode, null, version);
       return null;
     })
     .finally(() => {
@@ -94,11 +98,11 @@ export const prefetchServerIcon = (serverCode?: string | null, version?: number 
 export const useServerIcon = (serverCode?: string | null, version?: number | null) => {
   const [iconUrl, setIconUrl] = useState<string | null>(() => {
     if (!serverCode) return null;
-    return getCachedIcon(serverCode) ?? null;
+    return getCachedIcon(serverCode, version) ?? null;
   });
   const [iconLoading, setIconLoading] = useState(() => {
     if (!serverCode) return false;
-    return getCachedIcon(serverCode) === undefined;
+    return getCachedIcon(serverCode, version) === undefined;
   });
   const [iconError, setIconError] = useState(false);
 
@@ -110,7 +114,7 @@ export const useServerIcon = (serverCode?: string | null, version?: number | nul
       return;
     }
 
-    const cached = getCachedIcon(serverCode);
+    const cached = getCachedIcon(serverCode, version);
     if (cached !== undefined) {
       setIconUrl(cached);
       setIconLoading(false);
