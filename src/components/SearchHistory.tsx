@@ -27,7 +27,7 @@ const HistoryItem = memo(({
   onSelect: (code: string) => Promise<void> | void;
   isSelecting: boolean;
   onSelectStart: (id: string) => void;
-  onRemove?: (id: string) => Promise<boolean> | void;
+  onRemove?: (id: string) => void | Promise<void> | Promise<boolean>;
 }) => {
   const { iconUrl } = useServerIcon(item.query);
   const [copied, setCopied] = useState(false);
