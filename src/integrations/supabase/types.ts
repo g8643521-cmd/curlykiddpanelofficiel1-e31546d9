@@ -628,9 +628,13 @@ export type Database = {
         Row: {
           avatar_url: string | null
           badges: string[] | null
+          banner_url: string | null
           bio: string | null
           created_at: string
           discord_avatar: string | null
+          discord_guild_checked_at: string | null
+          discord_guild_member: boolean | null
+          discord_guild_status: string | null
           discord_user_id: string | null
           discord_username: string | null
           display_name: string | null
@@ -652,9 +656,13 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           badges?: string[] | null
+          banner_url?: string | null
           bio?: string | null
           created_at?: string
           discord_avatar?: string | null
+          discord_guild_checked_at?: string | null
+          discord_guild_member?: boolean | null
+          discord_guild_status?: string | null
           discord_user_id?: string | null
           discord_username?: string | null
           display_name?: string | null
@@ -676,9 +684,13 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           badges?: string[] | null
+          banner_url?: string | null
           bio?: string | null
           created_at?: string
           discord_avatar?: string | null
+          discord_guild_checked_at?: string | null
+          discord_guild_member?: boolean | null
+          discord_guild_status?: string | null
           discord_user_id?: string | null
           discord_username?: string | null
           display_name?: string | null
