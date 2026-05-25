@@ -63,14 +63,39 @@ Deno.serve(async (req) => {
       });
     }
 
+    const PAGE_SIZE = 1000;
     const data: Record<string, any> = {};
+    const stats: Record<string, { rows: number; pages: number; truncated?: boolean; error?: string }> = {};
     for (const t of tables) {
-      const { data: rows, error } = await admin.from(t).select("*");
-      if (error) {
-        data[t] = [];
-        continue;
+      const allRows: any[] = [];
+      let from = 0;
+      let pages = 0;
+      let failed: string | undefined;
+      // Paginate to bypass the default 1000-row PostgREST limit.
+      // Cap at 500k rows per table to stay within Edge Function memory/time.
+      const HARD_CAP = 500_000;
+      while (true) {
+        const to = from + PAGE_SIZE - 1;
+        const { data: rows, error } = await admin
+          .from(t)
+          .select("*")
+          .range(from, to);
+        if (error) {
+          failed = error.message;
+          break;
+        }
+        const batch = rows ?? [];
+        allRows.push(...batch);
+        pages++;
+        if (batch.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+        if (allRows.length >= HARD_CAP) {
+          stats[t] = { rows: allRows.length, pages, truncated: true };
+          break;
+        }
       }
-      data[t] = format === "csv" ? toCsv(rows ?? []) : (rows ?? []);
+      stats[t] = stats[t] ?? { rows: allRows.length, pages, ...(failed ? { error: failed } : {}) };
+      data[t] = format === "csv" ? toCsv(allRows) : allRows;
     }
 
     if (format === "json") {
