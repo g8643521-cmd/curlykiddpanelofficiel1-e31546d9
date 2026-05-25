@@ -106,24 +106,25 @@ const HistoryItem = memo(({
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate leading-tight">
+        <p className="text-sm font-semibold text-foreground truncate leading-tight">
           {displayName}
         </p>
-        <div className="mt-0.5 flex items-center gap-1.5 min-w-0">
-          <code className="font-mono text-[12px] text-foreground/80 truncate">
-            cfx.re/join/<span className="text-foreground">{item.query}</span>
+        <div className="mt-1 flex items-center gap-1.5 min-w-0">
+          <code className="font-mono text-[12px] text-foreground/90 truncate bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30">
+            cfx.re/join/<span className="text-foreground font-medium">{item.query}</span>
           </code>
           <button
             type="button"
             onClick={handleCopy}
             title="Copy CFX URL"
             aria-label="Copy CFX URL"
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/60 shrink-0"
           >
             {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
           </button>
         </div>
-        <p className="mt-1 text-[11px] text-muted-foreground/70 truncate">
+        <p className="mt-1.5 text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
+          <span className="inline-block w-1 h-1 rounded-full bg-emerald-500" />
           Searched {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
         </p>
       </div>
