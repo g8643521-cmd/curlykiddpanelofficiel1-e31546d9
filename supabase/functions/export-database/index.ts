@@ -103,6 +103,7 @@ Deno.serve(async (req) => {
       data._export_metadata = {
         exported_at: new Date().toISOString(),
         table_count: tables.length,
+        table_stats: stats,
       };
       try {
         const { data: usersPage } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
