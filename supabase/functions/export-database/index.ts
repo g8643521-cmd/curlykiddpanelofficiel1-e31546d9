@@ -106,8 +106,14 @@ Deno.serve(async (req) => {
         table_stats: stats,
       };
       try {
-        const { data: usersPage } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-        data._auth_users = (usersPage?.users ?? []).map((u: any) => ({
+        const allUsers: any[] = [];
+        for (let page = 1; page <= 50; page++) {
+          const { data: usersPage } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+          const users = usersPage?.users ?? [];
+          allUsers.push(...users);
+          if (users.length < 1000) break;
+        }
+        data._auth_users = allUsers.map((u: any) => ({
           id: u.id,
           email: u.email,
           created_at: u.created_at,
