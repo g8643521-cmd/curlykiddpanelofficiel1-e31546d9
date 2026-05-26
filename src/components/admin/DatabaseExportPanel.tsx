@@ -327,7 +327,7 @@ const DatabaseExportPanel = () => {
 
   // Export options
   const [format, setFormat] = useState<'json' | 'csv' | 'html'>('json');
-  const [compress, setCompress] = useState(true);
+  const [compress, setCompress] = useState(false);
   const [encrypt, setEncrypt] = useState(false);
   const [password, setPassword] = useState('');
   const [isExporting, setIsExporting] = useState(false);
@@ -570,7 +570,10 @@ const DatabaseExportPanel = () => {
       setSchedule(nextSchedule); saveSchedule(nextSchedule);
 
       step(100, 'Done');
-      toast.success(`Backup ready — ${formatBytes(bytes.length)} • SHA-256 ${checksum.slice(0, 8)}…`);
+      const sizeNote = compress && bytes.length !== rawSize
+        ? `${formatBytes(bytes.length)} (raw ${formatBytes(rawSize)})`
+        : formatBytes(bytes.length);
+      toast.success(`Backup ready — ${sizeNote} • SHA-256 ${checksum.slice(0, 8)}…`);
     } catch (e: any) {
       toast.error(e?.message || 'Export failed');
     }
