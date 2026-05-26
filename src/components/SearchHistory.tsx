@@ -110,7 +110,7 @@ const HistoryItem = memo(({
           {displayName}
         </p>
         <div className="mt-1 flex items-center gap-1.5 min-w-0">
-          <code className="font-mono text-[12px] text-foreground/90 bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30 break-all min-w-0 flex-1">
+          <code className="font-mono text-[12px] text-foreground/90 bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30 truncate min-w-0 flex-1 whitespace-nowrap">
             cfx.re/join/<span className="text-foreground font-medium">{item.query}</span>
           </code>
           <button
@@ -135,8 +135,8 @@ const HistoryItem = memo(({
           <button
             type="button"
             onClick={handleRemove}
-            className={`p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all ${
-              showRemove ? "opacity-100" : "opacity-0"
+            className={`p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all w-0 overflow-hidden opacity-0 group-hover:w-7 group-hover:opacity-100 ${
+              showRemove ? "!w-7 !opacity-100" : ""
             }`}
             title="Remove from history"
             aria-label="Remove from history"
@@ -149,13 +149,13 @@ const HistoryItem = memo(({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-secondary/60 transition-all opacity-0 group-hover:opacity-100"
+          className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-secondary/60 transition-all w-0 overflow-hidden opacity-0 group-hover:w-7 group-hover:opacity-100"
           title="Open server page"
           aria-label="Open server page"
         >
           <ArrowUpRight className="w-3.5 h-3.5" />
         </a>
-        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-1">
+        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
           Search again
         </span>
         <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
