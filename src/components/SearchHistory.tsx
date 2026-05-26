@@ -110,7 +110,7 @@ const HistoryItem = memo(({
           {displayName}
         </p>
         <div className="mt-1 flex items-center gap-1.5 min-w-0">
-          <code className="font-mono text-[12px] text-foreground/90 truncate bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30">
+          <code className="font-mono text-[12px] text-foreground/90 bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30 break-all min-w-0 flex-1">
             cfx.re/join/<span className="text-foreground font-medium">{item.query}</span>
           </code>
           <button
