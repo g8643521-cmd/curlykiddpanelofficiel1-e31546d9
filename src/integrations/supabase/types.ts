@@ -310,6 +310,51 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_auto_setups: {
+        Row: {
+          allowed_role_ids: Json
+          category_id: string
+          category_name: string
+          channels: Json
+          created_at: string
+          guild_id: string
+          id: string
+          preset: string
+          setup_key: string
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          allowed_role_ids?: Json
+          category_id: string
+          category_name: string
+          channels?: Json
+          created_at?: string
+          guild_id: string
+          id?: string
+          preset: string
+          setup_key: string
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          allowed_role_ids?: Json
+          category_id?: string
+          category_name?: string
+          channels?: Json
+          created_at?: string
+          guild_id?: string
+          id?: string
+          preset?: string
+          setup_key?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       discord_bot_config: {
         Row: {
           bot_avatar: string | null
