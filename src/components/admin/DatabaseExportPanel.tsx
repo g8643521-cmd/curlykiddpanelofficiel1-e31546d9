@@ -327,7 +327,7 @@ const DatabaseExportPanel = () => {
 
   // Export options
   const [format, setFormat] = useState<'json' | 'csv' | 'html'>('json');
-  const [compress, setCompress] = useState(true);
+  const [compress, setCompress] = useState(false);
   const [encrypt, setEncrypt] = useState(false);
   const [password, setPassword] = useState('');
   const [isExporting, setIsExporting] = useState(false);
