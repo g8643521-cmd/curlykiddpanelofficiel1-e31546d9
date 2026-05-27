@@ -142,7 +142,11 @@ export default function DashboardHero({ onExploreFeatures, onGetStarted }: Dashb
             src={heroImage}
             alt="CurlyKiddPanel Server Details"
             className="w-full"
+            width={1280}
+            height={800}
             loading="eager"
+            fetchPriority="high"
+            decoding="async"
             onError={(event) => {
               if (event.currentTarget.dataset.fallbackApplied) return;
               event.currentTarget.dataset.fallbackApplied = "true";
