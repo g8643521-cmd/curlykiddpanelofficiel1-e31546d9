@@ -105,7 +105,7 @@ const HistoryItem = memo(({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 transition-[padding] duration-200 group-hover:pr-24">
+      <div className="flex-1 min-w-0 transition-[padding] duration-200 group-hover:pr-44">
         <p className="text-sm font-semibold text-foreground truncate leading-tight">
           {displayName}
         </p>
