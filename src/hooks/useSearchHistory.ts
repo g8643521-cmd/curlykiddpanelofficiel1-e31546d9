@@ -8,6 +8,8 @@ export interface SearchHistoryItem {
   query: string;
   search_type: string | null;
   created_at: string;
+  player_count: number | null;
+  max_players: number | null;
 }
 
 export const useSearchHistory = () => {
@@ -33,7 +35,7 @@ export const useSearchHistory = () => {
       const outcome = await runAsync(async (signal) => {
         const { data, error } = await supabase
           .from('search_history')
-          .select('*')
+          .select('id, query, search_type, created_at, player_count, max_players')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(20)
