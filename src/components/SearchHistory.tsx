@@ -105,12 +105,12 @@ const HistoryItem = memo(({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 transition-[padding] duration-200 group-hover:pr-24">
         <p className="text-sm font-semibold text-foreground truncate leading-tight">
           {displayName}
         </p>
         <div className="mt-1 flex items-center gap-1.5 min-w-0">
-          <code className="font-mono text-[12px] text-foreground/90 bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30 truncate min-w-0 flex-1 whitespace-nowrap">
+          <code className="block w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[12px] text-foreground/90 bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30">
             cfx.re/join/<span className="text-foreground font-medium">{item.query}</span>
           </code>
           <button
@@ -130,13 +130,13 @@ const HistoryItem = memo(({
       </div>
 
       {/* Hover actions */}
-      <div className="shrink-0 flex items-center gap-1">
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
         {onRemove && (
           <button
             type="button"
             onClick={handleRemove}
-            className={`p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all w-0 overflow-hidden opacity-0 group-hover:w-7 group-hover:opacity-100 ${
-              showRemove ? "!w-7 !opacity-100" : ""
+            className={`p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-colors ${
+              showRemove ? "" : ""
             }`}
             title="Remove from history"
             aria-label="Remove from history"
@@ -149,13 +149,13 @@ const HistoryItem = memo(({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-secondary/60 transition-all w-0 overflow-hidden opacity-0 group-hover:w-7 group-hover:opacity-100"
+          className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-secondary/60 transition-colors"
           title="Open server page"
           aria-label="Open server page"
         >
           <ArrowUpRight className="w-3.5 h-3.5" />
         </a>
-        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground whitespace-nowrap">
           Search again
         </span>
         <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
