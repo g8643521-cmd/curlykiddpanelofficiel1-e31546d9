@@ -350,9 +350,9 @@ const PublicProfile = () => {
                 <div className="space-y-4">
                   {/* Member Since */}
                   <div>
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                       Member Since
-                    </h4>
+                    </h2>
                     <p className="text-sm text-foreground flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                       {profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { 
@@ -366,9 +366,9 @@ const PublicProfile = () => {
                   {/* Level Progress - Respect privacy */}
                   {profile.show_level && (
                     <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                         Level Progress
-                      </h4>
+                      </h2>
                       <div className="flex items-center gap-3">
                         <div 
                           className="px-2.5 py-1 rounded-md font-display font-bold text-sm text-primary-foreground"
