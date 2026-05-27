@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { useCheaterSearchHistory } from '@/hooks/useCheaterSearchHistory';
 
 interface UnifiedSearchProps {
   onServerSearch: (query: string) => void;
