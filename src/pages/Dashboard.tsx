@@ -56,12 +56,10 @@ const Dashboard = () => {
     searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const favoriteServerCodes = favorites.map(f => f.server_code);
-
   const { serverStatuses, isPolling, lastUpdate, manualRefresh } = useServerPolling({
     enabled: isReady && isAuthenticated && autoRefreshEnabled && !serverData && !showComparison,
     interval: 30000,
-    serverCodes: favoriteServerCodes,
+    serverCodes: [],
     notificationSettings,
     onNotification: showNotification,
   });
