@@ -75,12 +75,15 @@ const ServerEmbed = () => {
 
   return (
     <div style={{ ...baseStyles.container, background: colors.bg, borderColor: colors.border, color: colors.text }}>
+      <h1 style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}>
+        {stripColors(data.hostname)} — FiveM server status
+      </h1>
       <div style={baseStyles.header}>
-        <Wifi size={14} style={{ color: "#22c55e" }} />
+        <Wifi size={14} style={{ color: "#22c55e" }} aria-label="Connection status: online" />
         <span style={baseStyles.hostname}>{stripColors(data.hostname)}</span>
       </div>
       <div style={{ ...baseStyles.stats, color: colors.sub }}>
-        <Users size={14} />
+        <Users size={14} aria-label="Player count" />
         <span>{data.playerCount} / {data.maxPlayers}</span>
       </div>
       <div style={{ ...baseStyles.barBg, background: colors.barBg }}>
