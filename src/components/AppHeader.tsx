@@ -7,6 +7,14 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+} from '@/components/ui/context-menu';
 import DiscordMascot from '@/components/DiscordMascot';
 import BrandLogo from '@/components/BrandLogo';
 import profileBanner from '@/assets/profile-banner.jpg';
