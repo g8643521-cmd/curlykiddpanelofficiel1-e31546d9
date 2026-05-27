@@ -293,10 +293,12 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
     if (mode === 'server') {
       onServerSearch(query.trim());
     } else {
+      // Log the cheater search before navigating
+      void logCheaterSearch(query.trim().toLowerCase(), 0);
       // Navigate directly to Cheater Database with query
       navigate(`/cheaters?q=${encodeURIComponent(query.trim())}`);
     }
-  }, [query, mode, isLoading, onServerSearch, navigate]);
+  }, [query, mode, isLoading, onServerSearch, navigate, logCheaterSearch]);
 
   const handleClear = useCallback(() => {
     setQuery('');
