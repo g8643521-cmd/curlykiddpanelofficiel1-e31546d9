@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Download, ArrowRight, ArrowUpRight, Sparkles } from 'lucide-react';
+import { ModsGlyph } from '@/components/icons/PanelIcons';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabase';
@@ -91,13 +92,15 @@ const LatestMods = () => {
 
   const Header: React.FC<{ count?: number }> = ({ count }) => (
     <div className="flex items-center justify-between mb-5">
-      <div className="flex items-center gap-2.5">
-        <Package className="w-4 h-4 text-[hsl(var(--purple))]" />
-        <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider">
+      <div className="flex items-center gap-3">
+        <div className="text-[hsl(var(--purple))]">
+          <ModsGlyph size={20} />
+        </div>
+        <h3 className="font-display text-xl font-semibold text-foreground">
           {t('mods.latest')}
         </h3>
         {typeof count === 'number' && (
-          <span className="text-[11px] text-muted-foreground/70 font-mono">({count})</span>
+          <span className="text-sm text-muted-foreground">({count})</span>
         )}
       </div>
       <Button

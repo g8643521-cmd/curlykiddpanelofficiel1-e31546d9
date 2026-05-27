@@ -1,5 +1,6 @@
 import { memo, useState, useCallback } from "react";
 import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check, ArrowUpRight } from "lucide-react";
+import { HistoryGlyph } from "@/components/icons/PanelIcons";
 import { Button } from "@/components/ui/button";
 import { SearchHistoryItem } from "@/hooks/useSearchHistory";
 import { formatDistanceToNow } from "date-fns";
@@ -208,7 +209,7 @@ const SearchHistory = memo(({ history, isLoading, onSelect, onClear, onRemove }:
       <div className="rounded-xl overflow-hidden bg-card/40 backdrop-blur-xl border border-border/30 shadow-lg shadow-black/10 hover:border-border/50 transition-all duration-300 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="text-[hsl(var(--cyan))]">
-            <History className="w-5 h-5" />
+            <HistoryGlyph size={20} />
           </div>
            <h3 className="font-display text-xl font-semibold text-foreground">{t('history.title')}</h3>
         </div>
@@ -226,7 +227,7 @@ const SearchHistory = memo(({ history, isLoading, onSelect, onClear, onRemove }:
       <div className="rounded-xl overflow-hidden bg-card/40 backdrop-blur-xl border border-border/30 shadow-lg shadow-black/10 hover:border-border/50 transition-all duration-300 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="text-[hsl(var(--cyan))]">
-            <History className="w-5 h-5" />
+            <HistoryGlyph size={20} />
           </div>
           <h3 className="font-display text-xl font-semibold text-foreground">{t('history.title')}</h3>
         </div>
@@ -248,7 +249,7 @@ const SearchHistory = memo(({ history, isLoading, onSelect, onClear, onRemove }:
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="text-[hsl(var(--cyan))]">
-            <History className="w-5 h-5" />
+            <HistoryGlyph size={20} />
           </div>
           <h3 className="font-display text-xl font-semibold text-foreground">
             {t('history.title')}
