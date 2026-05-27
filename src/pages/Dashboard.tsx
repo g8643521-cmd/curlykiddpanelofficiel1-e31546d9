@@ -11,7 +11,7 @@ import Footer from "@/components/Footer";
 import { useCfxApi } from "@/hooks/useCfxApi";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useServerPolling } from "@/hooks/useServerPolling";
+
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { usePresence } from "@/hooks/usePresence";
 import { useAuthReady } from "@/hooks/useAuthReady";
