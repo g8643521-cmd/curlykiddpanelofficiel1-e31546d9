@@ -59,6 +59,55 @@ export const useSearchHistory = () => {
     return () => abortRef.current?.abort();
   }, [fetchHistory, isReady]);
 
+  // Live-refresh player counts for each history item on every load
+  useEffect(() => {
+    if (!isAuthenticated || !user || history.length === 0) return;
+    let cancelled = false;
+
+    (async () => {
+      const updates = await Promise.all(
+        history.map(async (item) => {
+          try {
+            const { data, error } = await supabase.functions.invoke('cfx-lookup', {
+              body: { serverCode: item.query, skipWebhook: true },
+            });
+            if (error || !data || data.error) return null;
+            const pc = data.playerCount ?? data.players?.length ?? 0;
+            const mp = data.maxPlayers ?? 0;
+            if (pc === item.player_count && mp === item.max_players) return null;
+            return { id: item.id, player_count: pc, max_players: mp };
+          } catch {
+            return null;
+          }
+        })
+      );
+      if (cancelled) return;
+      const changed = updates.filter((u): u is { id: string; player_count: number; max_players: number } => u !== null);
+      if (changed.length === 0) return;
+
+      setHistory((prev) =>
+        prev.map((h) => {
+          const u = changed.find((c) => c.id === h.id);
+          return u ? { ...h, player_count: u.player_count, max_players: u.max_players } : h;
+        })
+      );
+
+      // Persist updates in the background
+      for (const u of changed) {
+        void supabase
+          .from('search_history')
+          .update({ player_count: u.player_count, max_players: u.max_players })
+          .eq('id', u.id)
+          .eq('user_id', user.id);
+      }
+    })();
+
+    return () => { cancelled = true; };
+    // Re-run only when the set of item ids changes, not on every player_count tweak
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user, history.map((h) => h.id).join(',')]);
+
+
   const clearHistory = async () => {
     try {
       const { data: session } = await supabase.auth.getSession();
