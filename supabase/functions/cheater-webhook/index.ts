@@ -13,21 +13,56 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const url = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Forward to Discord webhook (system_webhooks for category "cheater") best-effort
-    const { data: hooks } = await supabase
+    // Require an authenticated session.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.toLowerCase().startsWith("bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userClient = createClient(url, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+
+    // Only admins/owners may broadcast to system cheater webhooks.
+    const { data: roles, error: rolesErr } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userData.user.id);
+    if (rolesErr) throw rolesErr;
+    const isPrivileged = (roles ?? []).some((r) => r.role === "admin" || r.role === "owner");
+    if (!isPrivileged) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: hooks } = await admin
       .from("system_webhooks")
       .select("webhook_url, enabled")
       .eq("category", "cheater")
       .eq("enabled", true);
 
     const payload = {
-      content: body.content ?? null,
-      embeds: body.embeds ?? undefined,
+      content: typeof body.content === "string" ? body.content.slice(0, 2000) : null,
+      embeds: Array.isArray(body.embeds) ? body.embeds.slice(0, 10) : undefined,
     };
 
     const results = await Promise.allSettled(
