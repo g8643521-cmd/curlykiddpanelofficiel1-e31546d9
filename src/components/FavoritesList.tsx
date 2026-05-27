@@ -162,7 +162,7 @@ const FavoritesList = memo(
         <div className="rounded-xl overflow-hidden bg-card/40 backdrop-blur-xl border border-border/30 shadow-lg shadow-black/10 hover:border-border/50 transition-all duration-300 p-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="text-[hsl(var(--yellow))]">
-              <Star className="w-5 h-5" />
+              <FavoritesGlyph size={20} />
             </div>
             <h3 className="font-display text-xl font-semibold text-foreground">
               {t("favorites.title")}
@@ -183,7 +183,7 @@ const FavoritesList = memo(
           {/* Header */}
           <div className="flex items-center gap-3 mb-5">
             <div className="text-[hsl(var(--yellow))]">
-              <Star className="w-5 h-5" />
+              <FavoritesGlyph size={20} />
             </div>
             <h3 className="font-display text-xl font-semibold text-foreground">
               {t("favorites.title")}
@@ -240,7 +240,7 @@ const FavoritesList = memo(
       <div className="rounded-xl overflow-hidden bg-card/40 backdrop-blur-xl border border-border/30 shadow-lg shadow-black/10 hover:border-border/50 transition-all duration-300 p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="text-[hsl(var(--yellow))]">
-            <Star className="w-5 h-5" />
+            <FavoritesGlyph size={20} />
           </div>
           <h3 className="font-display text-xl font-semibold text-foreground">
             {t("favorites.title")}
