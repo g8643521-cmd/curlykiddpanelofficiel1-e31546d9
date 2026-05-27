@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Settings, Loader2, XCircle, User, ChevronDown, LayoutGrid, Shield, Mail, Calendar, BadgeCheck, Copy, Check, HelpCircle, Activity } from 'lucide-react';
+import { LogOut, Settings, Loader2, XCircle, User, ChevronDown, LayoutGrid, Shield, Mail, Calendar, BadgeCheck, Copy, Check, HelpCircle, Activity, Package, Sparkles, Wrench } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuTrigger,

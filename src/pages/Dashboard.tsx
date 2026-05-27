@@ -56,13 +56,6 @@ const Dashboard = () => {
     searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const { serverStatuses, isPolling, lastUpdate, manualRefresh } = useServerPolling({
-    enabled: isReady && isAuthenticated && autoRefreshEnabled && !serverData && !showComparison,
-    interval: 30000,
-    serverCodes: [],
-    notificationSettings,
-    onNotification: showNotification,
-  });
 
   const handleServerSelect = useCallback(async (serverCode: string) => {
     await fetchServerData(serverCode);
