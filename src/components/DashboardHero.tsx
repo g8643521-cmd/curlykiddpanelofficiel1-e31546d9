@@ -47,6 +47,7 @@ export default function DashboardHero({ onExploreFeatures, onGetStarted }: Dashb
           <span className="bg-gradient-to-r from-primary via-[hsl(var(--cyan-glow))] to-primary bg-clip-text text-transparent">
             Panel
           </span>
+          <span className="sr-only"> — FiveM Server Lookup & Player Tracking</span>
         </h1>
 
         <p className="text-muted-foreground text-base md:text-lg max-w-lg leading-relaxed">
