@@ -209,20 +209,22 @@ const PublicProfile = () => {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Go back"
               onClick={() => navigate(-1)}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <button 
               onClick={() => navigate('/dashboard')}
+              aria-label="Go to CurlyKiddPanel dashboard"
               className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-[hsl(var(--cyan))]/20 flex items-center justify-center border border-primary/30">
                 <Server className="w-5 h-5 text-primary" />
               </div>
               <div className="text-left">
-                <h1 className="font-display text-lg font-bold text-foreground">CurlyKiddPanel</h1>
-                <p className="text-xs text-muted-foreground">User Profile</p>
+                <span className="font-display text-lg font-bold text-foreground block">CurlyKiddPanel</span>
+                <span className="text-xs text-muted-foreground block">User Profile</span>
               </div>
             </button>
           </div>
