@@ -312,12 +312,12 @@ const PublicProfile = () => {
               {/* User Info - More top margin to clear avatar on all screens */}
               <div className="pt-12">
                 <div className="flex items-center gap-2">
-                  <h2 
+                  <h1 
                     className="font-display text-xl md:text-2xl font-bold"
                     style={{ color: accentColor }}
                   >
                     {profile.display_name || 'Anonymous'}
-                  </h2>
+                  </h1>
                   {roleInfo && (
                     <Tooltip>
                       <TooltipTrigger asChild>
