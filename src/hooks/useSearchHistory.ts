@@ -37,6 +37,7 @@ export const useSearchHistory = () => {
           .from('search_history')
           .select('id, query, search_type, created_at, player_count, max_players')
           .eq('user_id', user.id)
+          .or('search_type.is.null,search_type.neq.cheater')
           .order('created_at', { ascending: false })
           .limit(20)
           .abortSignal(signal);
