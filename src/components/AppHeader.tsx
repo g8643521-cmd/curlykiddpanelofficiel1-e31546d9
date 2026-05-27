@@ -7,6 +7,14 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+} from '@/components/ui/context-menu';
 import DiscordMascot from '@/components/DiscordMascot';
 import BrandLogo from '@/components/BrandLogo';
 import profileBanner from '@/assets/profile-banner.jpg';
@@ -387,33 +395,90 @@ const AppHeader = ({ showBackButton = false, title, subtitle, onLogoClick }: App
               className="hidden"
             />
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/40 hover:bg-card/60 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40"
-                >
-                  {profile?.avatar_url ? (
-                    <img
-                      src={profile.avatar_url}
-                      alt=""
-                      className="w-6 h-6 rounded-full object-cover"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  ) : (
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-primary">
-                        {(profile?.display_name || '?').charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+              <ContextMenu>
+                <ContextMenuTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      data-allow-context-menu="true"
+                      className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/40 hover:bg-card/60 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40"
+                    >
+                      {profile?.avatar_url ? (
+                        <img
+                          src={profile.avatar_url}
+                          alt=""
+                          className="w-6 h-6 rounded-full object-cover"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-primary">
+                            {(profile?.display_name || '?').charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      {profile ? (
+                        <span className="text-sm text-foreground font-medium">{profile.display_name || t('nav.user_fallback')}</span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground animate-pulse">{t('nav.loading')}</span>
+                      )}
+                      {getRoleBadge()}
+                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/60" />
+                    </button>
+                  </DropdownMenuTrigger>
+                </ContextMenuTrigger>
+                <ContextMenuContent className="w-60 bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] rounded-xl">
+                  <ContextMenuLabel className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+                    {profile?.display_name || t('nav.user_fallback')}
+                  </ContextMenuLabel>
+                  <ContextMenuSeparator className="bg-border/40" />
+                  <ContextMenuItem onSelect={() => navigate('/profile')} className="gap-2.5 cursor-pointer text-[13px]">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="flex-1">View profile</span>
+                  </ContextMenuItem>
+                  <ContextMenuItem onSelect={() => navigate('/settings')} className="gap-2.5 cursor-pointer text-[13px]">
+                    <Settings className="w-4 h-4 text-muted-foreground" />
+                    <span className="flex-1">Settings</span>
+                  </ContextMenuItem>
+                  <ContextMenuItem
+                    onSelect={() => {
+                      if (profile?.display_name) {
+                        navigator.clipboard.writeText(profile.display_name).catch(() => {});
+                        toast.success('Username copied');
+                      }
+                    }}
+                    className="gap-2.5 cursor-pointer text-[13px]"
+                  >
+                    <Copy className="w-4 h-4 text-muted-foreground" />
+                    <span className="flex-1">Copy username</span>
+                  </ContextMenuItem>
+                  <ContextMenuItem onSelect={handleCopyId} className="gap-2.5 cursor-pointer text-[13px]">
+                    <Copy className="w-4 h-4 text-muted-foreground" />
+                    <span className="flex-1">Copy user ID</span>
+                  </ContextMenuItem>
+                  {(isAdmin || isOwner) && (
+                    <>
+                      <ContextMenuSeparator className="bg-border/40" />
+                      <ContextMenuItem onSelect={() => navigate('/admin')} className="gap-2.5 cursor-pointer text-[13px]">
+                        <Shield className="w-4 h-4 text-[hsl(var(--magenta))]" />
+                        <span className="flex-1">Admin panel</span>
+                      </ContextMenuItem>
+                    </>
                   )}
-                  {profile ? (
-                    <span className="text-sm text-foreground font-medium">{profile.display_name || t('nav.user_fallback')}</span>
-                  ) : (
-                    <span className="text-sm text-muted-foreground animate-pulse">{t('nav.loading')}</span>
-                  )}
-                  {getRoleBadge()}
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/60" />
-                </button>
-              </DropdownMenuTrigger>
+                  <ContextMenuSeparator className="bg-border/40" />
+                  <ContextMenuItem onSelect={() => navigate('/dashboard')} className="gap-2.5 cursor-pointer text-[13px] text-primary focus:text-primary focus:bg-primary/10">
+                    <LayoutGrid className="w-4 h-4" />
+                    <span className="flex-1 font-medium">Open dashboard</span>
+                  </ContextMenuItem>
+                  <ContextMenuSeparator className="bg-border/40" />
+                  <ContextMenuItem
+                    onSelect={handleLogout}
+                    className="gap-2.5 cursor-pointer text-[13px] text-destructive focus:text-destructive focus:bg-destructive/10"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span className="flex-1">{t('nav.logout')}</span>
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
               <DropdownMenuContent
                 align="end"
                 sideOffset={8}
