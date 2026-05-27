@@ -209,20 +209,22 @@ const PublicProfile = () => {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Go back"
               onClick={() => navigate(-1)}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <button 
               onClick={() => navigate('/dashboard')}
+              aria-label="Go to CurlyKiddPanel dashboard"
               className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-[hsl(var(--cyan))]/20 flex items-center justify-center border border-primary/30">
                 <Server className="w-5 h-5 text-primary" />
               </div>
               <div className="text-left">
-                <h1 className="font-display text-lg font-bold text-foreground">CurlyKiddPanel</h1>
-                <p className="text-xs text-muted-foreground">User Profile</p>
+                <span className="font-display text-lg font-bold text-foreground block">CurlyKiddPanel</span>
+                <span className="text-xs text-muted-foreground block">User Profile</span>
               </div>
             </button>
           </div>
@@ -269,7 +271,7 @@ const PublicProfile = () => {
                   {profile.avatar_url ? (
                     <img
                       src={profile.avatar_url}
-                      alt="Avatar"
+                      alt={`${profile.display_name || 'Player'} avatar`}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -310,12 +312,12 @@ const PublicProfile = () => {
               {/* User Info - More top margin to clear avatar on all screens */}
               <div className="pt-12">
                 <div className="flex items-center gap-2">
-                  <h2 
+                  <h1 
                     className="font-display text-xl md:text-2xl font-bold"
                     style={{ color: accentColor }}
                   >
                     {profile.display_name || 'Anonymous'}
-                  </h2>
+                  </h1>
                   {roleInfo && (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -348,9 +350,9 @@ const PublicProfile = () => {
                 <div className="space-y-4">
                   {/* Member Since */}
                   <div>
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                       Member Since
-                    </h4>
+                    </h2>
                     <p className="text-sm text-foreground flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                       {profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { 
@@ -364,9 +366,9 @@ const PublicProfile = () => {
                   {/* Level Progress - Respect privacy */}
                   {profile.show_level && (
                     <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                         Level Progress
-                      </h4>
+                      </h2>
                       <div className="flex items-center gap-3">
                         <div 
                           className="px-2.5 py-1 rounded-md font-display font-bold text-sm text-primary-foreground"

@@ -47,6 +47,7 @@ export default function DashboardHero({ onExploreFeatures, onGetStarted }: Dashb
           <span className="bg-gradient-to-r from-primary via-[hsl(var(--cyan-glow))] to-primary bg-clip-text text-transparent">
             Panel
           </span>
+          <span className="sr-only"> — FiveM Server Lookup & Player Tracking</span>
         </h1>
 
         <p className="text-muted-foreground text-base md:text-lg max-w-lg leading-relaxed">
@@ -141,7 +142,11 @@ export default function DashboardHero({ onExploreFeatures, onGetStarted }: Dashb
             src={heroImage}
             alt="CurlyKiddPanel Server Details"
             className="w-full"
+            width={1280}
+            height={800}
             loading="eager"
+            fetchPriority="high"
+            decoding="async"
             onError={(event) => {
               if (event.currentTarget.dataset.fallbackApplied) return;
               event.currentTarget.dataset.fallbackApplied = "true";
