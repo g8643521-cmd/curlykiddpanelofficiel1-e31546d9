@@ -271,7 +271,7 @@ const PublicProfile = () => {
                   {profile.avatar_url ? (
                     <img
                       src={profile.avatar_url}
-                      alt="Avatar"
+                      alt={`${profile.display_name || 'Player'} avatar`}
                       className="w-full h-full object-cover"
                     />
                   ) : (
