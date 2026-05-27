@@ -61,11 +61,10 @@ Deno.serve(async (req) => {
     }
 
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const admin = createClient(supabaseUrl, serviceKey);
+    const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
     const { data: keyRow, error: keyErr } = await admin
+
       .from("admin_settings")
       .select("value")
       .eq("key", "screensharex_api_key")
