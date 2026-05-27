@@ -225,6 +225,10 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
       setExternalResult(sxResult);
       setHasPlayerSearched(true);
 
+      // Log this cheater search to history
+      void logCheaterSearch(searchQuery, records.length);
+
+
       // Send Discord webhook notification
       const { data: { session } } = await supabase.auth.getSession();
       const sxUser = sxResult?.discord_user;
