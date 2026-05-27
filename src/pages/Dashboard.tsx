@@ -189,7 +189,7 @@ const Dashboard = () => {
             </div>
 
             {/* Search History */}
-            <div className="max-w-2xl mx-auto mt-4">
+            <div className="max-w-5xl mx-auto mt-6 grid gap-4 md:grid-cols-2">
               <SearchHistory
                 history={history}
                 isLoading={historyLoading}
@@ -197,6 +197,7 @@ const Dashboard = () => {
                 onClear={clearHistory}
                 onRemove={removeHistoryItem}
               />
+              <CheaterSearchHistory />
             </div>
 
             {/* Featured Mods Carousel */}
