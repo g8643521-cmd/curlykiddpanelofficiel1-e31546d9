@@ -164,6 +164,7 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { logCheaterSearch } = useCheaterSearchHistory();
 
   const isLoading = mode === 'server' ? isServerLoading : isPlayerSearching;
 
