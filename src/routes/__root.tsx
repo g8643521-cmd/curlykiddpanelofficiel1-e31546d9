@@ -45,6 +45,19 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  useEffect(() => {
+    const onContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      // Allow native context menu inside editable fields so users can still copy/paste text.
+      if (target?.closest('input, textarea, [contenteditable="true"]')) return;
+      // Allow components that opt-in to a custom context menu (e.g. Radix ContextMenu trigger).
+      if (target?.closest('[data-allow-context-menu="true"], [data-radix-context-menu-trigger]')) return;
+      e.preventDefault();
+    };
+    window.addEventListener('contextmenu', onContextMenu);
+    return () => window.removeEventListener('contextmenu', onContextMenu);
+  }, []);
+
   return (
     <RootDocument>
       <RootErrorBoundary>
