@@ -34,12 +34,32 @@ Deno.serve(async (req) => {
     if (healthcheck || query === "ping") {
       return json({ success: true, healthcheck: true });
     }
+
+    // Require an authenticated session before consuming the external API key.
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.toLowerCase().startsWith("bearer ")) {
+      return json({ success: false, error: "Unauthorized" }, 401);
+    }
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return json({ success: false, error: "Unauthorized" }, 401);
+    }
+
     if (!discord_id || typeof discord_id !== "string") {
       return json({ success: false, error: "discord_id is required" }, 400);
     }
     if (!/^\d{17,20}$/.test(discord_id)) {
       return json({ success: false, error: "Invalid discord_id format" }, 400);
     }
+
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
