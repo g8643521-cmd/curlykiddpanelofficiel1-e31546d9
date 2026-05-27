@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { useCheaterSearchHistory } from '@/hooks/useCheaterSearchHistory';
 
 interface UnifiedSearchProps {
   onServerSearch: (query: string) => void;
@@ -163,6 +164,7 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { logCheaterSearch } = useCheaterSearchHistory();
 
   const isLoading = mode === 'server' ? isServerLoading : isPlayerSearching;
 
@@ -222,6 +224,10 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
       setCheaterRecords(records);
       setExternalResult(sxResult);
       setHasPlayerSearched(true);
+
+      // Log this cheater search to history
+      void logCheaterSearch(searchQuery, records.length);
+
 
       // Send Discord webhook notification
       const { data: { session } } = await supabase.auth.getSession();
@@ -287,10 +293,12 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
     if (mode === 'server') {
       onServerSearch(query.trim());
     } else {
+      // Log the cheater search before navigating
+      void logCheaterSearch(query.trim().toLowerCase(), 0);
       // Navigate directly to Cheater Database with query
       navigate(`/cheaters?q=${encodeURIComponent(query.trim())}`);
     }
-  }, [query, mode, isLoading, onServerSearch, navigate]);
+  }, [query, mode, isLoading, onServerSearch, navigate, logCheaterSearch]);
 
   const handleClear = useCallback(() => {
     setQuery('');

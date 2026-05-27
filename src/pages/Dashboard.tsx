@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import UnifiedSearch from "@/components/UnifiedSearch";
 import DashboardHero from "@/components/DashboardHero";
 import SearchHistory from "@/components/SearchHistory";
+import CheaterSearchHistory from "@/components/CheaterSearchHistory";
 
 import MaintenanceBanner from "@/components/MaintenanceBanner";
 import Footer from "@/components/Footer";
@@ -188,7 +189,7 @@ const Dashboard = () => {
             </div>
 
             {/* Search History */}
-            <div className="max-w-2xl mx-auto mt-4">
+            <div className="max-w-5xl mx-auto mt-6 grid gap-4 md:grid-cols-2">
               <SearchHistory
                 history={history}
                 isLoading={historyLoading}
@@ -196,6 +197,7 @@ const Dashboard = () => {
                 onClear={clearHistory}
                 onRemove={removeHistoryItem}
               />
+              <CheaterSearchHistory />
             </div>
 
             {/* Featured Mods Carousel */}

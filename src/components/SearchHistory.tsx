@@ -74,6 +74,12 @@ const HistoryItem = memo(({
     [item.id, onRemove]
   );
 
+  const playerCount = item.player_count ?? 0;
+  const maxPlayers = item.max_players ?? 0;
+  const fillPct = maxPlayers > 0 ? Math.min(100, Math.round((playerCount / maxPlayers) * 100)) : 0;
+  const isOnline = maxPlayers > 0;
+  const hostname = item.search_type && item.search_type !== "server" ? item.search_type : null;
+
   return (
     <div
       role="button"
@@ -84,75 +90,93 @@ const HistoryItem = memo(({
       }}
       onMouseEnter={() => setShowRemove(true)}
       onMouseLeave={() => setShowRemove(false)}
-      className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg border border-transparent bg-transparent hover:bg-secondary/40 hover:border-border/40 transition-colors cursor-pointer ${
+      className={`group relative flex items-center gap-4 px-4 py-4 rounded-xl border border-border/30 bg-secondary/20 hover:bg-secondary/40 hover:border-border/60 transition-colors cursor-pointer ${
         isSelecting ? "opacity-70 pointer-events-none" : ""
       }`}
     >
-      {/* Avatar + subtle status dot */}
+      {/* Avatar + status dot */}
       <div className="relative shrink-0">
-        <div className="w-9 h-9 rounded-md overflow-hidden bg-secondary/60 border border-border/30 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-xl overflow-hidden bg-secondary/60 border border-border/40 flex items-center justify-center">
           {isSelecting ? (
-            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+            <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
           ) : iconUrl ? (
             <img src={iconUrl} alt="" className="w-full h-full object-cover" />
           ) : (
-            <Server className="w-4 h-4 text-muted-foreground" />
+            <Server className="w-6 h-6 text-muted-foreground" />
           )}
         </div>
         <span
           aria-hidden
-          className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-card"
+          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-card ${isOnline ? "bg-emerald-500" : "bg-muted-foreground"}`}
         />
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 transition-[padding] duration-200 group-hover:pr-52">
-        <p className="text-sm font-semibold text-foreground truncate leading-tight">
-          {displayName}
-        </p>
-        {item.player_count !== null && item.max_players !== null && item.max_players > 0 && (
-          <p className="mt-0.5 text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            {item.player_count} / {item.max_players} players
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <p className="text-base font-semibold text-foreground truncate leading-tight">
+            {displayName}
           </p>
+          {isOnline && (
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+              Online
+            </span>
+          )}
+        </div>
+
+        {hostname && displayName !== hostname && (
+          <p className="mt-0.5 text-xs text-muted-foreground truncate">{hostname}</p>
         )}
-        <div className="mt-1 flex items-center min-w-0">
-          <code className="block w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[12px] text-foreground/90 bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30">
+
+        <div className="mt-2 flex items-center gap-3">
+          <code className="block min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-foreground/90 bg-secondary/40 px-2 py-1 rounded border border-border/30">
             cfx.re/join/<span className="text-foreground font-medium">{item.query}</span>
           </code>
         </div>
-        <p className="mt-1.5 text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
+
+        {isOnline && (
+          <div className="mt-2 flex items-center gap-3">
+            <div className="flex-1 h-1.5 bg-secondary/60 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary to-[hsl(var(--cyan))] transition-all"
+                style={{ width: `${fillPct}%` }}
+              />
+            </div>
+            <span className="text-xs font-medium text-foreground/90 whitespace-nowrap tabular-nums">
+              {playerCount} / {maxPlayers}
+            </span>
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap tabular-nums">
+              {fillPct}%
+            </span>
+          </div>
+        )}
+
+        <p className="mt-2 text-[11px] text-muted-foreground flex items-center gap-1.5">
           <span className="inline-block w-1 h-1 rounded-full bg-emerald-500" />
-          Searched {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+          Last searched {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
         </p>
       </div>
 
-      {/* Hover actions */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 bg-secondary/80 backdrop-blur-md rounded-lg px-1.5 py-1 border border-border/50 shadow-lg shadow-black/20">
+      {/* Actions (always visible, more prominent on hover) */}
+      <div className="flex items-center gap-1 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
         <button
           type="button"
           onClick={handleCopy}
           title="Copy CFX URL"
           aria-label="Copy CFX URL"
-          className="group/btn relative p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-          <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-popover text-popover-foreground text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 whitespace-nowrap shadow-md">
-            {copied ? "Copied!" : "Copy"}
-          </span>
+          {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
         </button>
         {onRemove && (
           <button
             type="button"
             onClick={handleRemove}
-            className="group/btn relative p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            className="p-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
             title="Remove from history"
             aria-label="Remove from history"
           >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-popover text-popover-foreground text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 whitespace-nowrap shadow-md">
-              Remove
-            </span>
+            <Trash2 className="w-4 h-4" />
           </button>
         )}
         <a
@@ -160,20 +184,13 @@ const HistoryItem = memo(({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="group/btn relative p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           title="Open server page"
           aria-label="Open server page"
         >
-          <ArrowUpRight className="w-3.5 h-3.5" />
-          <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-popover text-popover-foreground text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 whitespace-nowrap shadow-md">
-            Open
-          </span>
+          <ArrowUpRight className="w-4 h-4" />
         </a>
-        <div className="w-px h-5 bg-border/50 mx-0.5" />
-        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 whitespace-nowrap pl-1 pr-1">
-          Search again
-          <ArrowRight className="w-3.5 h-3.5 text-foreground/60 group-hover:translate-x-0.5 transition-transform" />
-        </span>
+        <ArrowRight className="hidden sm:inline-block w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition-all ml-1" />
       </div>
     </div>
   );
