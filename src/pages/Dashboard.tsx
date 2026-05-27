@@ -4,13 +4,11 @@ import AppHeader from "@/components/AppHeader";
 import { useI18n } from "@/lib/i18n";
 import UnifiedSearch from "@/components/UnifiedSearch";
 import DashboardHero from "@/components/DashboardHero";
-import FavoritesList from "@/components/FavoritesList";
 import SearchHistory from "@/components/SearchHistory";
 
 import MaintenanceBanner from "@/components/MaintenanceBanner";
 import Footer from "@/components/Footer";
 import { useCfxApi } from "@/hooks/useCfxApi";
-import { useFavorites } from "@/hooks/useFavorites";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useServerPolling } from "@/hooks/useServerPolling";
@@ -24,7 +22,6 @@ const CosmicNebulaBackground = lazy(() => import("@/components/CosmicNebulaBackg
 const ServerDetails = lazy(() => import("@/components/ServerDetails"));
 const ServerDetailsSkeleton = lazy(() => import("@/components/ServerDetailsSkeleton"));
 const ServerComparison = lazy(() => import("@/components/ServerComparison"));
-const LatestMods = lazy(() => import("@/components/LatestMods"));
 const FeaturedModsCarousel = lazy(() => import("@/components/FeaturedModsCarousel"));
 const FeatureCards = lazy(() => import("@/components/FeatureCards"));
 
