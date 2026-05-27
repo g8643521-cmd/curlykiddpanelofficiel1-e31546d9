@@ -148,15 +148,8 @@ const Dashboard = () => {
                 data={serverData}
                 serverCode={lastSearchedCode}
                 onClose={clearData}
-                isFavorite={lastSearchedCode ? isFavorite(lastSearchedCode) : false}
-                onToggleFavorite={async () => {
-                  if (!lastSearchedCode) return;
-                  if (isFavorite(lastSearchedCode)) {
-                    await removeFavorite(lastSearchedCode);
-                  } else {
-                    await addFavorite(lastSearchedCode, serverData.hostname);
-                  }
-                }}
+                isFavorite={false}
+                onToggleFavorite={async () => {}}
                 notificationProps={lastSearchedCode ? {
                   hasNotification: hasNotification(lastSearchedCode),
                   currentSettings: getNotificationSettings(lastSearchedCode),
@@ -202,15 +195,8 @@ const Dashboard = () => {
               )}
             </div>
 
-            {/* Favorites, History & Latest Mods */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mt-4">
-              <FavoritesList 
-                favorites={favorites}
-                isLoading={favoritesLoading}
-                onSelect={handleServerSelect}
-                onRemove={removeFavorite}
-                serverStatuses={serverStatuses}
-              />
+            {/* Search History */}
+            <div className="max-w-2xl mx-auto mt-4">
               <SearchHistory
                 history={history}
                 isLoading={historyLoading}
@@ -218,9 +204,6 @@ const Dashboard = () => {
                 onClear={clearHistory}
                 onRemove={removeHistoryItem}
               />
-              <Suspense fallback={<div className="animate-pulse h-48 bg-muted/10 rounded-xl" />}>
-                <LatestMods />
-              </Suspense>
             </div>
 
             {/* Featured Mods Carousel */}
