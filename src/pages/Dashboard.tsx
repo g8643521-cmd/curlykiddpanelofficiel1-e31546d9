@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import UnifiedSearch from "@/components/UnifiedSearch";
 import DashboardHero from "@/components/DashboardHero";
 import SearchHistory from "@/components/SearchHistory";
+import CheaterSearchHistory from "@/components/CheaterSearchHistory";
 
 import MaintenanceBanner from "@/components/MaintenanceBanner";
 import Footer from "@/components/Footer";
