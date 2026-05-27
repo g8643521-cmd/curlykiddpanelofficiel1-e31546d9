@@ -832,6 +832,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          max_players: number | null
+          player_count: number | null
           query: string
           search_type: string | null
           user_id: string | null
@@ -839,6 +841,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          max_players?: number | null
+          player_count?: number | null
           query: string
           search_type?: string | null
           user_id?: string | null
@@ -846,6 +850,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          max_players?: number | null
+          player_count?: number | null
           query?: string
           search_type?: string | null
           user_id?: string | null

@@ -109,6 +109,12 @@ const HistoryItem = memo(({
         <p className="text-sm font-semibold text-foreground truncate leading-tight">
           {displayName}
         </p>
+        {item.player_count !== null && item.max_players !== null && item.max_players > 0 && (
+          <p className="mt-0.5 text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            {item.player_count} / {item.max_players} players
+          </p>
+        )}
         <div className="mt-1 flex items-center min-w-0">
           <code className="block w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[12px] text-foreground/90 bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30">
             cfx.re/join/<span className="text-foreground font-medium">{item.query}</span>

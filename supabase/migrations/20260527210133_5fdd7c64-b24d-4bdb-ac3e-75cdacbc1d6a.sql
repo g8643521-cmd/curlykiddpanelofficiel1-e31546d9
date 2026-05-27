@@ -1,0 +1,1 @@
+ALTER TABLE public.search_history ADD COLUMN IF NOT EXISTS player_count integer; ALTER TABLE public.search_history ADD COLUMN IF NOT EXISTS max_players integer;

@@ -303,6 +303,8 @@ export const useCfxApi = () => {
               user_id: userId,
               query: serverCode,
               search_type: serverInfo.hostname || 'server',
+              player_count: serverInfo.playerCount ?? serverInfo.players?.length ?? 0,
+              max_players: serverInfo.maxPlayers ?? 0,
             }).abortSignal(controller.signal);
             if (!isCurrentRequest()) return;
             
