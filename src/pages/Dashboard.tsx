@@ -30,9 +30,8 @@ const Dashboard = () => {
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const { isLoading, serverData, error: lookupError, errorDetails: lookupErrorDetails, lastSearchedCode, fetchServerData, clearData } = useCfxApi();
-  const { favorites, isLoading: favoritesLoading, addFavorite, removeFavorite, isFavorite } = useFavorites();
   const { history, isLoading: historyLoading, refetch: refetchHistory, clearHistory, removeHistoryItem } = useSearchHistory();
-  const { 
+  const {
     settings: notificationSettings, 
     permissionGranted, 
     requestPermission, 
