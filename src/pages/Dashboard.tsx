@@ -4,16 +4,13 @@ import AppHeader from "@/components/AppHeader";
 import { useI18n } from "@/lib/i18n";
 import UnifiedSearch from "@/components/UnifiedSearch";
 import DashboardHero from "@/components/DashboardHero";
-import FavoritesList from "@/components/FavoritesList";
 import SearchHistory from "@/components/SearchHistory";
 
 import MaintenanceBanner from "@/components/MaintenanceBanner";
 import Footer from "@/components/Footer";
 import { useCfxApi } from "@/hooks/useCfxApi";
-import { useFavorites } from "@/hooks/useFavorites";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useServerPolling } from "@/hooks/useServerPolling";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { usePresence } from "@/hooks/usePresence";
 import { useAuthReady } from "@/hooks/useAuthReady";
@@ -24,7 +21,6 @@ const CosmicNebulaBackground = lazy(() => import("@/components/CosmicNebulaBackg
 const ServerDetails = lazy(() => import("@/components/ServerDetails"));
 const ServerDetailsSkeleton = lazy(() => import("@/components/ServerDetailsSkeleton"));
 const ServerComparison = lazy(() => import("@/components/ServerComparison"));
-const LatestMods = lazy(() => import("@/components/LatestMods"));
 const FeaturedModsCarousel = lazy(() => import("@/components/FeaturedModsCarousel"));
 const FeatureCards = lazy(() => import("@/components/FeatureCards"));
 
@@ -33,9 +29,8 @@ const Dashboard = () => {
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const { isLoading, serverData, error: lookupError, errorDetails: lookupErrorDetails, lastSearchedCode, fetchServerData, clearData } = useCfxApi();
-  const { favorites, isLoading: favoritesLoading, addFavorite, removeFavorite, isFavorite } = useFavorites();
   const { history, isLoading: historyLoading, refetch: refetchHistory, clearHistory, removeHistoryItem } = useSearchHistory();
-  const { 
+  const {
     settings: notificationSettings, 
     permissionGranted, 
     requestPermission, 
@@ -60,15 +55,6 @@ const Dashboard = () => {
     searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const favoriteServerCodes = favorites.map(f => f.server_code);
-
-  const { serverStatuses, isPolling, lastUpdate, manualRefresh } = useServerPolling({
-    enabled: isReady && isAuthenticated && autoRefreshEnabled && !serverData && !showComparison,
-    interval: 30000,
-    serverCodes: favoriteServerCodes,
-    notificationSettings,
-    onNotification: showNotification,
-  });
 
   const handleServerSelect = useCallback(async (serverCode: string) => {
     await fetchServerData(serverCode);
@@ -154,15 +140,8 @@ const Dashboard = () => {
                 data={serverData}
                 serverCode={lastSearchedCode}
                 onClose={clearData}
-                isFavorite={lastSearchedCode ? isFavorite(lastSearchedCode) : false}
-                onToggleFavorite={async () => {
-                  if (!lastSearchedCode) return;
-                  if (isFavorite(lastSearchedCode)) {
-                    await removeFavorite(lastSearchedCode);
-                  } else {
-                    await addFavorite(lastSearchedCode, serverData.hostname);
-                  }
-                }}
+                isFavorite={false}
+                onToggleFavorite={async () => {}}
                 notificationProps={lastSearchedCode ? {
                   hasNotification: hasNotification(lastSearchedCode),
                   currentSettings: getNotificationSettings(lastSearchedCode),
@@ -208,15 +187,8 @@ const Dashboard = () => {
               )}
             </div>
 
-            {/* Favorites, History & Latest Mods */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mt-4">
-              <FavoritesList 
-                favorites={favorites}
-                isLoading={favoritesLoading}
-                onSelect={handleServerSelect}
-                onRemove={removeFavorite}
-                serverStatuses={serverStatuses}
-              />
+            {/* Search History */}
+            <div className="max-w-2xl mx-auto mt-4">
               <SearchHistory
                 history={history}
                 isLoading={historyLoading}
@@ -224,9 +196,6 @@ const Dashboard = () => {
                 onClear={clearHistory}
                 onRemove={removeHistoryItem}
               />
-              <Suspense fallback={<div className="animate-pulse h-48 bg-muted/10 rounded-xl" />}>
-                <LatestMods />
-              </Suspense>
             </div>
 
             {/* Featured Mods Carousel */}

@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Settings, Loader2, XCircle, User, ChevronDown, LayoutGrid, Shield, Mail, Calendar, BadgeCheck, Copy, Check, HelpCircle, Activity } from 'lucide-react';
+import { LogOut, Settings, Loader2, XCircle, User, ChevronDown, LayoutGrid, Shield, Mail, Calendar, BadgeCheck, Copy, Check, HelpCircle, Activity, Package, Sparkles, Wrench } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -356,9 +356,41 @@ const AppHeader = ({ showBackButton = false, title, subtitle, onLogoClick }: App
             <button onClick={() => navigate('/cheaters')} className={navLinkClass('/cheaters')}>
               {t('nav.cheater_db_label')}
             </button>
-            <button onClick={() => navigate('/mods')} className={navLinkClass('/mods')}>
-              {t('nav.mods_label')}
-            </button>
+            <div className="relative group">
+              <button
+                onClick={() => navigate('/mods')}
+                className={`${navLinkClass('/mods')} flex items-center gap-1`}
+              >
+                {t('nav.mods_label')}
+                <ChevronDown className="w-3 h-3 transition-transform group-hover:rotate-180" />
+              </button>
+              {/* Dropdown on hover */}
+              <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                <div className="bg-card/95 backdrop-blur-xl border border-border/40 rounded-xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] py-2 min-w-[180px]">
+                  <button
+                    onClick={() => navigate('/mods')}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors text-left"
+                  >
+                    <Package className="w-4 h-4" />
+                    Browse Mods
+                  </button>
+                  <button
+                    onClick={() => navigate('/mods')}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors text-left"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Featured Mods
+                  </button>
+                  <button
+                    onClick={() => navigate('/mods')}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors text-left"
+                  >
+                    <Wrench className="w-4 h-4" />
+                    Mod Tools
+                  </button>
+                </div>
+              </div>
+            </div>
             <button onClick={() => navigate('/coordinates')} className={navLinkClass('/coordinates')}>
               {t('nav.coords_label')}
             </button>
