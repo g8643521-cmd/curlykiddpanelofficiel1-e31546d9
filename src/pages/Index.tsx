@@ -154,7 +154,7 @@ const Index = () => {
       {/* Nav */}
       <header className="sticky top-0 z-50 border-b border-border/20 bg-background/60 backdrop-blur-2xl">
         <div className="container mx-auto px-6 flex items-center justify-between h-14">
-          <button onClick={() => navigate("/")} className="hover:opacity-80 transition-opacity">
+          <button onClick={() => navigate("/")} aria-label="CurlyKiddPanel home" className="hover:opacity-80 transition-opacity">
             <BrandLogo size="md" />
           </button>
           <div className="flex items-center gap-3">
