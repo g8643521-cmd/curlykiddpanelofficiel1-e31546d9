@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Download, ArrowRight, ArrowUpRight, Sparkles } from 'lucide-react';
+import { ModsGlyph } from '@/components/icons/PanelIcons';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabase';
