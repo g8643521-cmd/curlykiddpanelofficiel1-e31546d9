@@ -130,7 +130,7 @@ const HistoryItem = memo(({
       </div>
 
       {/* Hover actions */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 bg-secondary/60 backdrop-blur-sm rounded-md px-2 py-1 border border-border/40">
         {onRemove && (
           <button
             type="button"
