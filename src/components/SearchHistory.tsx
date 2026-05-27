@@ -105,23 +105,14 @@ const HistoryItem = memo(({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 transition-[padding] duration-200 group-hover:pr-44">
+      <div className="flex-1 min-w-0 transition-[padding] duration-200 group-hover:pr-52">
         <p className="text-sm font-semibold text-foreground truncate leading-tight">
           {displayName}
         </p>
-        <div className="mt-1 flex items-center gap-1.5 min-w-0">
+        <div className="mt-1 flex items-center min-w-0">
           <code className="block w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[12px] text-foreground/90 bg-secondary/40 px-1.5 py-0.5 rounded border border-border/30">
             cfx.re/join/<span className="text-foreground font-medium">{item.query}</span>
           </code>
-          <button
-            type="button"
-            onClick={handleCopy}
-            title="Copy CFX URL"
-            aria-label="Copy CFX URL"
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/60 shrink-0"
-          >
-            {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-          </button>
         </div>
         <p className="mt-1.5 text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
           <span className="inline-block w-1 h-1 rounded-full bg-emerald-500" />
@@ -130,18 +121,31 @@ const HistoryItem = memo(({
       </div>
 
       {/* Hover actions */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 bg-secondary/60 backdrop-blur-sm rounded-md px-2 py-1 border border-border/40">
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 bg-secondary/80 backdrop-blur-md rounded-lg px-1.5 py-1 border border-border/50 shadow-lg shadow-black/20">
+        <button
+          type="button"
+          onClick={handleCopy}
+          title="Copy CFX URL"
+          aria-label="Copy CFX URL"
+          className="group/btn relative p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+        >
+          {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+          <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-popover text-popover-foreground text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 whitespace-nowrap shadow-md">
+            {copied ? "Copied!" : "Copy"}
+          </span>
+        </button>
         {onRemove && (
           <button
             type="button"
             onClick={handleRemove}
-            className={`p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-colors ${
-              showRemove ? "" : ""
-            }`}
+            className="group/btn relative p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
             title="Remove from history"
             aria-label="Remove from history"
           >
             <Trash2 className="w-3.5 h-3.5" />
+            <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-popover text-popover-foreground text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 whitespace-nowrap shadow-md">
+              Remove
+            </span>
           </button>
         )}
         <a
@@ -149,16 +153,20 @@ const HistoryItem = memo(({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-secondary/60 transition-colors"
+          className="group/btn relative p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           title="Open server page"
           aria-label="Open server page"
         >
           <ArrowUpRight className="w-3.5 h-3.5" />
+          <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-popover text-popover-foreground text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 whitespace-nowrap shadow-md">
+            Open
+          </span>
         </a>
-        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground whitespace-nowrap">
+        <div className="w-px h-5 bg-border/50 mx-0.5" />
+        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 whitespace-nowrap pl-1 pr-1">
           Search again
+          <ArrowRight className="w-3.5 h-3.5 text-foreground/60 group-hover:translate-x-0.5 transition-transform" />
         </span>
-        <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
       </div>
     </div>
   );
