@@ -9,6 +9,7 @@ import {
   Search,
   Lightbulb,
 } from "lucide-react";
+import { FavoritesGlyph } from "@/components/icons/PanelIcons";
 import { Button } from "@/components/ui/button";
 import { Favorite } from "@/hooks/useFavorites";
 import { stripColorCodes } from "@/lib/utils";
