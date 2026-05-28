@@ -169,7 +169,7 @@ const CheaterSearchHistory = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-2 max-h-[420px] overflow-y-auto pr-2">
+        <div className="space-y-3 max-h-[640px] overflow-y-auto pr-2">
           {history.map((item) => (
             <Item key={item.id} item={item} onRemove={removeItem} />
           ))}

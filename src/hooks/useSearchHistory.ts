@@ -10,6 +10,12 @@ export interface SearchHistoryItem {
   created_at: string;
   player_count: number | null;
   max_players: number | null;
+  // Enriched live (not persisted)
+  gametype?: string | null;
+  mapname?: string | null;
+  hostname?: string | null;
+  region?: string | null;
+  ownerName?: string | null;
 }
 
 export const useSearchHistory = () => {
@@ -75,25 +81,31 @@ export const useSearchHistory = () => {
             if (error || !data || data.error) return null;
             const pc = data.playerCount ?? data.players?.length ?? 0;
             const mp = data.maxPlayers ?? 0;
-            if (pc === item.player_count && mp === item.max_players) return null;
-            return { id: item.id, player_count: pc, max_players: mp };
+            const gametype = data.gametype ?? data.vars?.gametype ?? null;
+            const mapname = data.mapname ?? data.vars?.mapname ?? null;
+            const hostname = data.hostname ?? null;
+            const region = data.vars?.locale ?? data.region ?? null;
+            const ownerName = data.ownerName ?? data.vars?.sv_projectName ?? null;
+            return { id: item.id, player_count: pc, max_players: mp, gametype, mapname, hostname, region, ownerName };
           } catch {
             return null;
           }
         })
       );
       if (cancelled) return;
-      const changed = updates.filter((u): u is { id: string; player_count: number; max_players: number } => u !== null);
+      const changed = updates.filter((u): u is NonNullable<typeof u> => u !== null);
       if (changed.length === 0) return;
 
       setHistory((prev) =>
         prev.map((h) => {
           const u = changed.find((c) => c.id === h.id);
-          return u ? { ...h, player_count: u.player_count, max_players: u.max_players } : h;
+          return u
+            ? { ...h, player_count: u.player_count, max_players: u.max_players, gametype: u.gametype, mapname: u.mapname, hostname: u.hostname, region: u.region, ownerName: u.ownerName }
+            : h;
         })
       );
 
-      // Persist updates in the background
+      // Persist player counts in the background
       for (const u of changed) {
         void supabase
           .from('search_history')

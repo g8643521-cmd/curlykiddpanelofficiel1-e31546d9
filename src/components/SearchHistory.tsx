@@ -134,6 +134,27 @@ const HistoryItem = memo(({
           </code>
         </div>
 
+        {/* Meta chips: gametype, map, region */}
+        {(item.gametype || item.mapname || item.region) && (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {item.gametype && (
+              <span className="text-[10px] font-medium uppercase tracking-wide text-foreground/80 bg-primary/10 border border-primary/30 px-2 py-0.5 rounded">
+                {item.gametype}
+              </span>
+            )}
+            {item.mapname && (
+              <span className="text-[10px] font-medium text-foreground/80 bg-secondary/60 border border-border/40 px-2 py-0.5 rounded">
+                🗺 {item.mapname}
+              </span>
+            )}
+            {item.region && (
+              <span className="text-[10px] font-medium text-foreground/80 bg-secondary/60 border border-border/40 px-2 py-0.5 rounded uppercase">
+                {item.region}
+              </span>
+            )}
+          </div>
+        )}
+
         {isOnline && (
           <div className="mt-2 flex items-center gap-3">
             <div className="flex-1 h-1.5 bg-secondary/60 rounded-full overflow-hidden">
@@ -283,7 +304,7 @@ const SearchHistory = memo(({ history, isLoading, onSelect, onClear, onRemove }:
           {t('history.clear')}
         </Button>
       </div>
-      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+      <div className="space-y-3 max-h-[640px] overflow-y-auto pr-2">
         {history.map((item) => (
           <HistoryItem
             key={item.id}
