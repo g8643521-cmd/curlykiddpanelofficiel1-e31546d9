@@ -287,15 +287,18 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
     }
   }, [query]);
 
-  const handleSubmit = useCallback((e?: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!query.trim() || isLoading) return;
     if (mode === 'server') {
       onServerSearch(query.trim());
     } else {
-      // Log the cheater search before navigating
-      void logCheaterSearch(query.trim().toLowerCase(), 0);
-      // Navigate directly to Cheater Database with query
+      // Await so the insert completes before we unmount via navigate
+      try {
+        await logCheaterSearch(query.trim().toLowerCase(), 0);
+      } catch (err) {
+        console.error('Failed to log cheater search:', err);
+      }
       navigate(`/cheaters?q=${encodeURIComponent(query.trim())}`);
     }
   }, [query, mode, isLoading, onServerSearch, navigate, logCheaterSearch]);
