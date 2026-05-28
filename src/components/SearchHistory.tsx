@@ -304,7 +304,7 @@ const SearchHistory = memo(({ history, isLoading, onSelect, onClear, onRemove }:
           {t('history.clear')}
         </Button>
       </div>
-      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+      <div className="space-y-3 max-h-[640px] overflow-y-auto pr-2">
         {history.map((item) => (
           <HistoryItem
             key={item.id}
