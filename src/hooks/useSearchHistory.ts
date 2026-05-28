@@ -10,6 +10,12 @@ export interface SearchHistoryItem {
   created_at: string;
   player_count: number | null;
   max_players: number | null;
+  // Enriched live (not persisted)
+  gametype?: string | null;
+  mapname?: string | null;
+  hostname?: string | null;
+  region?: string | null;
+  ownerName?: string | null;
 }
 
 export const useSearchHistory = () => {
