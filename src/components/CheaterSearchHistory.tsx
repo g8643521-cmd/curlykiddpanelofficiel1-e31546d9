@@ -353,9 +353,7 @@ const CheaterSearchHistory = () => {
     return (
       <div className="rounded-xl bg-card/40 backdrop-blur-xl border border-border/30 shadow-lg shadow-black/10 p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-9 h-9 rounded-lg bg-destructive/15 text-destructive flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5" />
-          </div>
+          <AlertTriangle className="w-6 h-6 text-destructive" />
           <h3 className="font-display text-xl font-semibold text-foreground">Cheater Searches</h3>
         </div>
         <div className="space-y-3">
