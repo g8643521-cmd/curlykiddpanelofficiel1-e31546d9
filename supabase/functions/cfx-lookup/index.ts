@@ -101,30 +101,44 @@ const tryDirect = async (host: string, port: number) => {
   }
 };
 
+const UPSTREAM_HOSTS = [
+  // Primary: the host the official servers.fivem.net web frontend uses.
+  // Returns data for many servers that the public master-list 404s on.
+  "https://frontend.cfx-services.net",
+  // Fallback: legacy public master-list endpoint.
+  "https://servers-frontend.fivem.net",
+];
+
 const fetchUpstream = async (serverCode: string) => {
-  // Retry once with browser-like headers to dodge transient 5xx / cache misses
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const res = await fetch(`https://servers-frontend.fivem.net/api/servers/single/${serverCode}`, {
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "Mozilla/5.0 (CurlyKiddPanel; +https://curlykiddpanel.lovable.app)",
-          Referer: "https://servers.fivem.net/",
-        },
-        signal: AbortSignal.timeout(9000),
-      });
-      if (res.status === 404) return { kind: "notfound" as const };
-      if (!res.ok) {
+  let lastStatus = 0;
+  let lastMessage: string | undefined;
+  for (const host of UPSTREAM_HOSTS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(`${host}/api/servers/single/${serverCode}`, {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "Mozilla/5.0 (CurlyKiddPanel; +https://curlykiddpanel.lovable.app)",
+            Referer: "https://servers.fivem.net/",
+          },
+          signal: AbortSignal.timeout(9000),
+        });
+        if (res.status === 404) { lastStatus = 404; break; } // try next host
+        if (!res.ok) {
+          lastStatus = res.status;
+          if (attempt === 0) { await new Promise(r => setTimeout(r, 400)); continue; }
+          break; // try next host
+        }
+        return { kind: "ok" as const, payload: await res.json() };
+      } catch (e) {
+        lastMessage = (e as Error)?.message;
         if (attempt === 0) { await new Promise(r => setTimeout(r, 400)); continue; }
-        return { kind: "error" as const, status: res.status };
+        break; // try next host
       }
-      return { kind: "ok" as const, payload: await res.json() };
-    } catch (e) {
-      if (attempt === 0) { await new Promise(r => setTimeout(r, 400)); continue; }
-      return { kind: "error" as const, status: 0, message: (e as Error)?.message };
     }
   }
-  return { kind: "error" as const, status: 0 };
+  if (lastStatus === 404) return { kind: "notfound" as const };
+  return { kind: "error" as const, status: lastStatus, message: lastMessage };
 };
 
 const resolveJoinCode = async (code: string): Promise<{ host: string; port: number } | null> => {
