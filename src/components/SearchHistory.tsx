@@ -116,16 +116,16 @@ const HistoryItem = memo(({
         <div className="w-14 h-14 rounded-xl overflow-hidden bg-secondary/60 border border-border/40 flex items-center justify-center">
           {isSelecting ? (
             <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-          ) : (
+          ) : effectiveIcon ? (
             <img
-              src={effectiveIcon || defaultServerIcon}
+              src={effectiveIcon}
               alt=""
               className="w-full h-full object-cover"
               loading="lazy"
               width={56}
               height={56}
             />
-          )}
+          ) : null}
         </div>
         <span
           aria-hidden
