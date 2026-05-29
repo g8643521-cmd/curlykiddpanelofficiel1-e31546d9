@@ -169,15 +169,22 @@ Deno.serve(async (req) => {
     const serverCode = cleanCode(rawInput);
     if (!serverCode) return json({ success: false, error: "Valid serverCode is required", invalid: true });
 
-    const upstream = await fetchUpstream(serverCode);
+    // Run the master-list lookup AND the join-code resolution in parallel.
+    // The master list returns 404 for many valid join codes — so we always
+    // prepare a direct-query fallback even before we see the upstream result.
+    const [upstream, resolved] = await Promise.all([
+      fetchUpstream(serverCode),
+      resolveJoinCode(serverCode),
+    ]);
+
+    const tryDirectFallback = async () => {
+      if (!resolved) return null;
+      return await tryDirect(resolved.host, resolved.port);
+    };
 
     if (upstream.kind === "notfound") {
-      // Fallback: resolve via cfx.re join page header and query the server directly
-      const resolved = await resolveJoinCode(serverCode);
-      if (resolved) {
-        const direct = await tryDirect(resolved.host, resolved.port);
-        if (direct) return json({ ...direct, server: serverCode });
-      }
+      const direct = await tryDirectFallback();
+      if (direct) return json({ ...direct, server: serverCode });
       return json({
         success: false,
         error: "Server not listed in FiveM master list",
@@ -189,6 +196,9 @@ Deno.serve(async (req) => {
 
 
     if (upstream.kind === "error") {
+      // Master list failed (network/5xx). Try direct before giving up.
+      const direct = await tryDirectFallback();
+      if (direct) return json({ ...direct, server: serverCode });
       return json({
         success: false,
         error: `FiveM upstream error (${upstream.status || "network"})`,
