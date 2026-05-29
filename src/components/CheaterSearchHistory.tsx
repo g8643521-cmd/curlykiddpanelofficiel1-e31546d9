@@ -15,6 +15,12 @@ import {
   ServerCog,
   Database,
   UserSearch,
+  Ban,
+  MessageSquare,
+  Activity,
+  Clock,
+  Star,
+  CalendarClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
