@@ -4,13 +4,21 @@ import { useAuthReady } from "@/hooks/useAuthReady";
 
 export interface CheaterSearchMetadata {
   sx_username?: string | null;
+  sx_global_name?: string | null;
   sx_avatar_url?: string | null;
   sx_avatar_hash?: string | null;
   sx_discord_id?: string | null;
   sx_tickets?: number;
   sx_guilds?: number;
+  sx_bans?: number;
+  sx_messages?: number;
+  sx_anticheat?: number;
   sx_flagged?: boolean;
   sx_guild_names?: string[];
+  sx_top_guild?: { name: string; count: number } | null;
+  sx_last_action?: { action: string; guild?: string; time?: string } | null;
+  sx_first_seen?: string | null;
+  sx_last_seen?: string | null;
   db_confirmed?: number;
   db_suspected?: number;
   db_total?: number;
