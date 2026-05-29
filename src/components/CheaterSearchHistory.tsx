@@ -21,6 +21,7 @@ import {
   Clock,
   Star,
   CalendarClock,
+  ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 import { useCheaterSearchHistory, type CheaterSearchHistoryItem } from "@/hooks/useCheaterSearchHistory";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { useCustomIcons } from "@/hooks/useCustomIcons";
+import CustomIconDialog from "@/components/CustomIconDialog";
 
 const typeLabel = (t?: string) => {
   switch (t) {
