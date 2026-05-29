@@ -80,13 +80,17 @@ const shapeFromInfoDynamic = (
 
 const tryDirect = async (host: string, port: number) => {
   const base = `http://${host}:${port}`;
+  const directHeaders = {
+    "User-Agent": "CitizenFX/1 (CurlyKiddPanel; +https://curlykiddpanel.lovable.app)",
+    Accept: "application/json",
+  };
   try {
     const [infoRes, dynRes, playersRes] = await Promise.all([
-      fetch(`${base}/info.json`, { signal: AbortSignal.timeout(7000) }),
-      fetch(`${base}/dynamic.json`, { signal: AbortSignal.timeout(7000) }),
-      fetch(`${base}/players.json`, { signal: AbortSignal.timeout(7000) }).catch(() => null),
+      fetch(`${base}/info.json`, { headers: directHeaders, signal: AbortSignal.timeout(7000) }).catch(() => null),
+      fetch(`${base}/dynamic.json`, { headers: directHeaders, signal: AbortSignal.timeout(7000) }).catch(() => null),
+      fetch(`${base}/players.json`, { headers: directHeaders, signal: AbortSignal.timeout(7000) }).catch(() => null),
     ]);
-    if (!infoRes.ok || !dynRes.ok) return null;
+    if (!infoRes || !dynRes || !infoRes.ok || !dynRes.ok) return null;
     const info = await infoRes.json().catch(() => null);
     const dynamic = await dynRes.json().catch(() => null);
     const players = playersRes && playersRes.ok ? await playersRes.json().catch(() => null) : null;
