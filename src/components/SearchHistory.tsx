@@ -40,8 +40,12 @@ const HistoryItem = memo(({
   onRemove?: (id: string) => void | Promise<void> | Promise<boolean>;
 }) => {
   const { iconUrl } = useServerIcon(item.query);
+  const { get: getCustomIcon, set: setCustomIcon, remove: removeCustomIcon } = useCustomIcons("server");
+  const customIcon = getCustomIcon(item.query);
+  const effectiveIcon = customIcon || iconUrl;
   const [copied, setCopied] = useState(false);
   const [showRemove, setShowRemove] = useState(false);
+  const [iconDialogOpen, setIconDialogOpen] = useState(false);
 
   const displayName = stripColorCodes(
     item.search_type && item.search_type !== "server" ? item.search_type : item.query
