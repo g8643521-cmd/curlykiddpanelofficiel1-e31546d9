@@ -117,6 +117,9 @@ const Item = memo(({
   const lastSeen = meta.sx_last_seen ? new Date(meta.sx_last_seen) : null;
 
   return (
+    <>
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
     <div
       role="button"
       tabIndex={0}
@@ -124,7 +127,11 @@ const Item = memo(({
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleOpen(); }}
       className="group relative flex items-start gap-4 px-4 py-4 rounded-xl border border-border/30 bg-secondary/20 hover:bg-secondary/40 hover:border-border/60 transition-colors cursor-pointer"
     >
-      {avatarUrl ? (
+      {customIcon ? (
+        <div className="w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-border/40 bg-secondary">
+          <img src={customIcon} alt={displayName || item.query} className="w-full h-full object-cover" />
+        </div>
+      ) : avatarUrl ? (
         <Avatar className="w-12 h-12 shrink-0 border border-border/40">
           <AvatarImage src={avatarUrl} alt={displayName || item.query} />
           <AvatarFallback className="bg-secondary text-xs font-semibold">
