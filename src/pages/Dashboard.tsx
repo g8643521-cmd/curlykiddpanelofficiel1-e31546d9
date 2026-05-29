@@ -178,11 +178,13 @@ const Dashboard = () => {
               {lookupError && !isLoading && (
                 <div className="max-w-2xl mx-auto mt-3">
                   <ErrorCard
-                    title={t("lookup.failed") || "Server lookup failed"}
-                    message={lookupError}
+                    title={t("lookup.failed")}
+                    message={/not found/i.test(lookupError) ? t("lookup.not_found") : lookupError}
                     details={lookupErrorDetails}
                     onRetry={lastSearchedCode ? () => fetchServerData(lastSearchedCode, true) : undefined}
                     isRetrying={isLoading}
+                    onDismiss={clearData}
+                    dismissLabel={t("lookup.dismiss")}
                   />
                 </div>
               )}
