@@ -369,9 +369,7 @@ const CheaterSearchHistory = () => {
     <div className="rounded-xl bg-card/40 backdrop-blur-xl border border-border/30 shadow-lg shadow-black/10 hover:border-border/50 transition-all duration-300 p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-destructive/15 text-destructive flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5" />
-          </div>
+          <AlertTriangle className="w-6 h-6 text-destructive" />
           <h3 className="font-display text-xl font-semibold text-foreground">Cheater Searches</h3>
           {history.length > 0 && (
             <span className="text-sm text-muted-foreground">({history.length})</span>
