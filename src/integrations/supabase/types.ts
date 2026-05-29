@@ -833,6 +833,7 @@ export type Database = {
           created_at: string
           id: string
           max_players: number | null
+          metadata: Json
           player_count: number | null
           query: string
           search_type: string | null
@@ -842,6 +843,7 @@ export type Database = {
           created_at?: string
           id?: string
           max_players?: number | null
+          metadata?: Json
           player_count?: number | null
           query: string
           search_type?: string | null
@@ -851,6 +853,7 @@ export type Database = {
           created_at?: string
           id?: string
           max_players?: number | null
+          metadata?: Json
           player_count?: number | null
           query?: string
           search_type?: string | null
