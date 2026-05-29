@@ -21,6 +21,13 @@ const parseIpPort = (raw: string): { host: string; port: number } | null => {
   return null;
 };
 
+const parseEndpoint = (endpoint: unknown): { host: string; port: number } | null => {
+  const raw = String(endpoint || "").trim();
+  if (!raw) return null;
+  const withoutProtocol = raw.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+  return parseIpPort(withoutProtocol);
+};
+
 const shapeFromInfoDynamic = (
   info: any,
   dynamic: any,
@@ -191,19 +198,22 @@ Deno.serve(async (req) => {
     const vars = data?.vars || {};
     const endpoints = Array.isArray(data?.connectEndPoints) ? data.connectEndPoints : [];
     const [ip, rawPort] = String(endpoints[0] || "").split(":");
+    const directEndpoint = parseEndpoint(endpoints[0]);
+    const directData = directEndpoint ? await tryDirect(directEndpoint.host, directEndpoint.port) : null;
 
     return json({
       success: true,
       hostname: data?.hostname || data?.sv_projectName || serverCode,
-      players: Array.isArray(data?.players) ? data.players : [],
-      playerCount: Number(data?.clients ?? 0),
+      players: directData?.players?.length ? directData.players : (Array.isArray(data?.players) ? data.players : []),
+      playerCount: Number(data?.clients ?? directData?.playerCount ?? directData?.players?.length ?? 0),
       maxPlayers: Number(data?.sv_maxclients || vars.sv_maxClients || 0),
-      resources: Array.isArray(data?.resources) ? data.resources : [],
+      resources: Array.isArray(data?.resources) && data.resources.length ? data.resources : (directData?.resources || []),
       server: serverCode,
       vars,
-      ip: ip || null,
-      port: rawPort ? Number(rawPort) : undefined,
-      iconVersion: data?.iconVersion ?? null,
+      ip: directEndpoint?.host || ip || null,
+      port: directEndpoint?.port || (rawPort ? Number(rawPort) : undefined),
+      iconVersion: directData?.iconVersion ?? data?.iconVersion ?? null,
+      iconDataUrl: directData?.iconDataUrl ?? null,
       ownerName: data?.ownerName ?? null,
       ownerProfile: data?.ownerProfile ?? null,
       ownerAvatar: data?.ownerAvatar ?? null,
@@ -215,9 +225,10 @@ Deno.serve(async (req) => {
       locale: vars.locale || null,
       licenseKeyToken: data?.licenseKeyToken || null,
       premiumTier: data?.premium || data?.premiumTier || null,
-      banner: vars.banner_detail || vars.banner_connecting || null,
+      banner: vars.banner_detail || vars.banner_connecting || directData?.banner || null,
       gametype: data?.gametype || vars.gametype || null,
       mapname: data?.mapname || vars.mapname || null,
+      endpointCapabilities: directData?.endpointCapabilities ?? undefined,
     });
   } catch (err) {
     return json({ success: false, error: err instanceof Error ? err.message : "Lookup failed", fallback: true });
