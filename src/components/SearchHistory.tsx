@@ -94,6 +94,9 @@ const HistoryItem = memo(({
   const hostname = item.search_type && item.search_type !== "server" ? item.search_type : null;
 
   return (
+    <>
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
     <div
       role="button"
       tabIndex={0}
@@ -112,8 +115,8 @@ const HistoryItem = memo(({
         <div className="w-14 h-14 rounded-xl overflow-hidden bg-secondary/60 border border-border/40 flex items-center justify-center">
           {isSelecting ? (
             <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-          ) : iconUrl ? (
-            <img src={iconUrl} alt="" className="w-full h-full object-cover" />
+          ) : effectiveIcon ? (
+            <img src={effectiveIcon} alt="" className="w-full h-full object-cover" />
           ) : (
             <Server className="w-6 h-6 text-muted-foreground" />
           )}
