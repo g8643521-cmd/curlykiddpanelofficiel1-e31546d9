@@ -15,6 +15,12 @@ import {
   ServerCog,
   Database,
   UserSearch,
+  Ban,
+  MessageSquare,
+  Activity,
+  Clock,
+  Star,
+  CalendarClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -79,14 +85,23 @@ const Item = memo(({
     [item.id, onRemove]
   );
 
+  const globalName = meta.sx_global_name;
   const username = meta.sx_username;
+  const displayName = globalName || username;
   const avatarUrl = meta.sx_avatar_url;
   const tickets = meta.sx_tickets ?? 0;
   const guilds = meta.sx_guilds ?? 0;
+  const bans = meta.sx_bans ?? 0;
+  const messages = meta.sx_messages ?? 0;
+  const anticheat = meta.sx_anticheat ?? 0;
   const confirmed = meta.db_confirmed ?? 0;
   const suspected = meta.db_suspected ?? 0;
   const flagged = !!meta.sx_flagged;
   const guildNames = (meta.sx_guild_names || []).slice(0, 3);
+  const topGuild = meta.sx_top_guild;
+  const lastAction = meta.sx_last_action;
+  const firstSeen = meta.sx_first_seen ? new Date(meta.sx_first_seen) : null;
+  const lastSeen = meta.sx_last_seen ? new Date(meta.sx_last_seen) : null;
 
   return (
     <div
@@ -98,9 +113,9 @@ const Item = memo(({
     >
       {avatarUrl ? (
         <Avatar className="w-12 h-12 shrink-0 border border-border/40">
-          <AvatarImage src={avatarUrl} alt={username || item.query} />
+          <AvatarImage src={avatarUrl} alt={displayName || item.query} />
           <AvatarFallback className="bg-secondary text-xs font-semibold">
-            {(username || item.query).slice(0, 2).toUpperCase()}
+            {(displayName || item.query).slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       ) : (
@@ -112,14 +127,17 @@ const Item = memo(({
       <div className="flex-1 min-w-0 space-y-2">
         {/* Header row */}
         <div className="flex items-center gap-2 flex-wrap">
-          {username ? (
+          {displayName ? (
             <p className="text-base font-semibold text-foreground truncate leading-tight">
-              {username}
+              {displayName}
             </p>
           ) : (
             <p className="text-base font-semibold text-foreground truncate leading-tight font-mono">
               {item.query}
             </p>
+          )}
+          {globalName && username && username !== globalName && (
+            <span className="text-[11px] text-muted-foreground">@{username}</span>
           )}
           <Badge variant="outline" className="text-[10px] uppercase tracking-wide flex items-center gap-1">
             <TypeIcon className="w-3 h-3" /> {typeInfo.label}
@@ -140,10 +158,10 @@ const Item = memo(({
           )}
         </div>
 
-        {/* Query (when we showed username above) */}
-        {username && (
+        {/* Query / Discord ID */}
+        {displayName && (
           <p className="text-[11px] text-muted-foreground font-mono truncate">
-            {item.query}
+            {meta.sx_discord_id ? <><Hash className="w-3 h-3 inline -mt-0.5" /> {meta.sx_discord_id}</> : item.query}
           </p>
         )}
 
@@ -159,6 +177,11 @@ const Item = memo(({
               <Shield className="w-3 h-3" /> {suspected} suspected
             </span>
           )}
+          {bans > 0 && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-destructive/10 border border-destructive/30 text-[11px] text-destructive">
+              <Ban className="w-3 h-3" /> {bans} bans
+            </span>
+          )}
           {tickets > 0 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[11px] text-muted-foreground">
               <Ticket className="w-3 h-3" /> {tickets} tickets
@@ -166,13 +189,32 @@ const Item = memo(({
           )}
           {guilds > 0 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[11px] text-muted-foreground">
-              <Users className="w-3 h-3" /> {guilds} guild records
+              <Users className="w-3 h-3" /> {guilds} guilds
+            </span>
+          )}
+          {anticheat > 0 && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[11px] text-muted-foreground">
+              <Activity className="w-3 h-3" /> {anticheat} AC events
+            </span>
+          )}
+          {messages > 0 && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[11px] text-muted-foreground">
+              <MessageSquare className="w-3 h-3" /> {messages} msgs
             </span>
           )}
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[11px] text-muted-foreground">
             <SrcIcon className="w-3 h-3" /> {srcInfo.label}
           </span>
         </div>
+
+        {/* Top guild */}
+        {topGuild && (
+          <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+            <Star className="w-3 h-3 text-[hsl(var(--yellow))]" />
+            Most active in <span className="text-foreground font-medium">{topGuild.name}</span>
+            <span className="text-muted-foreground">({topGuild.count} actions)</span>
+          </p>
+        )}
 
         {/* Guild names preview */}
         {guildNames.length > 0 && (
@@ -183,10 +225,33 @@ const Item = memo(({
           </p>
         )}
 
+        {/* Last action */}
+        {lastAction && (
+          <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            Last: <span className="text-foreground">{lastAction.action}</span>
+            {lastAction.guild && <span>in {lastAction.guild}</span>}
+            {lastAction.time && <span>· {formatDistanceToNow(new Date(lastAction.time), { addSuffix: true })}</span>}
+          </p>
+        )}
+
+        {/* First / last seen */}
+        {(firstSeen || lastSeen) && (
+          <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+            <CalendarClock className="w-3 h-3" />
+            {firstSeen && <>First seen {formatDistanceToNow(firstSeen, { addSuffix: true })}</>}
+            {firstSeen && lastSeen && firstSeen.getTime() !== lastSeen.getTime() && <span>· </span>}
+            {lastSeen && firstSeen?.getTime() !== lastSeen.getTime() && (
+              <>Last seen {formatDistanceToNow(lastSeen, { addSuffix: true })}</>
+            )}
+          </p>
+        )}
+
         <p className="text-[11px] text-muted-foreground">
           Searched {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
         </p>
       </div>
+
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button

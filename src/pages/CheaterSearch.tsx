@@ -542,19 +542,56 @@ const CheaterSearch = () => {
       ...((sxData?.tickets_v2 as any[]) || []),
     ];
     const guildNamesForLog = [...new Set(allTicketsForLog.map((t: any) => t.guild_name || t.guildname).filter(Boolean))] as string[];
+    // Compute top guild by ticket count
+    const guildCounts: Record<string, number> = {};
+    for (const t of allTicketsForLog) {
+      const g = (t.guild_name || t.guildname) as string | undefined;
+      if (g) guildCounts[g] = (guildCounts[g] || 0) + 1;
+    }
+    const topGuildEntry = Object.entries(guildCounts).sort((a, b) => b[1] - a[1])[0];
+    const topGuild = topGuildEntry ? { name: topGuildEntry[0], count: topGuildEntry[1] } : null;
+    // Latest ticket action by time
+    const sortedTickets = [...allTicketsForLog].sort((a: any, b: any) => {
+      const ta = new Date(a.time || a.created_at || 0).getTime();
+      const tb = new Date(b.time || b.created_at || 0).getTime();
+      return tb - ta;
+    });
+    const latestTicket = sortedTickets[0];
+    const lastAction = latestTicket ? {
+      action: String(latestTicket.action || 'ticket'),
+      guild: latestTicket.guild_name || latestTicket.guildname,
+      time: latestTicket.time || latestTicket.created_at,
+    } : null;
+    // First / last seen across all guild activity
+    const guildActivityForLog = (sxData?.guild_join_leave as any[]) || [];
+    const allTimes = [
+      ...allTicketsForLog.map((t: any) => t.time || t.created_at),
+      ...guildActivityForLog.map((g: any) => g.joined_at),
+      ...guildActivityForLog.map((g: any) => g.left_at),
+    ].filter(Boolean).map((s: string) => new Date(s).getTime()).filter((n) => !isNaN(n));
+    const firstSeen = allTimes.length ? new Date(Math.min(...allTimes)).toISOString() : null;
+    const lastSeen = allTimes.length ? new Date(Math.max(...allTimes)).toISOString() : null;
     const sxAvatarUrl = sxDiscordUserData?.avatar_url || (sxDiscordUserData?.avatar && isDiscordId
       ? `https://cdn.discordapp.com/avatars/${query}/${sxDiscordUserData.avatar}.${sxDiscordUserData.avatar.startsWith('a_') ? 'gif' : 'png'}?size=128`
       : null);
     void logCheaterSearch(query, visible.length, {
       source: 'cheaters_db',
       sx_discord_id: isDiscordId ? query : null,
-      sx_username: sxDiscordUserData?.global_name || sxDiscordUserData?.username || null,
+      sx_username: sxDiscordUserData?.username || null,
+      sx_global_name: sxDiscordUserData?.global_name || null,
       sx_avatar_url: sxAvatarUrl,
       sx_avatar_hash: sxDiscordUserData?.avatar || null,
       sx_tickets: (sxData?.summary?.total_tickets || 0) + (sxData?.summary?.total_tickets_v2 || 0),
       sx_guilds: sxData?.summary?.total_guild_records || 0,
+      sx_bans: sxData?.summary?.total_bans || 0,
+      sx_messages: sxData?.summary?.total_messages || 0,
+      sx_anticheat: sxData?.summary?.total_anticheat_events || sxData?.summary?.total_anticheat || 0,
       sx_flagged: !!(sxData?.summary?.is_flagged || sxData?.flagged),
       sx_guild_names: guildNamesForLog,
+      sx_top_guild: topGuild,
+      sx_last_action: lastAction,
+      sx_first_seen: firstSeen,
+      sx_last_seen: lastSeen,
       db_confirmed: confirmedCount,
       db_suspected: suspectedCount,
       db_total: visible.length,
