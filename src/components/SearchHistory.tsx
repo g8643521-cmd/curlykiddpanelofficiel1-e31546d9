@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from "react";
-import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check, ArrowUpRight } from "lucide-react";
+import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check, ArrowUpRight, ImageIcon } from "lucide-react";
 import { HistoryGlyph } from "@/components/icons/PanelIcons";
 import { Button } from "@/components/ui/button";
 import { SearchHistoryItem } from "@/hooks/useSearchHistory";
@@ -8,6 +8,15 @@ import { stripColorCodes } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useServerIcon } from "@/hooks/useServerIcon";
 import { toast } from "@/hooks/use-toast";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { useCustomIcons } from "@/hooks/useCustomIcons";
+import CustomIconDialog from "@/components/CustomIconDialog";
 
 interface SearchHistoryProps {
   history: SearchHistoryItem[];
