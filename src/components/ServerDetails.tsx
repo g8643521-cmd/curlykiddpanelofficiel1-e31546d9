@@ -194,42 +194,102 @@ const ServerDetails = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
-      {/* Cheater Warning Banner - use stableCheaterMatches to prevent disappearing during refresh */}
+      {/* Cheater Warning Banner */}
       {stableCheaterMatches.length > 0 && (
         <div>
           <CheaterWarningBanner matches={stableCheaterMatches} />
         </div>
       )}
-      {/* Header Card */}
-      <div className="glass-card p-6">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex items-start gap-4 flex-1">
-            {/* Server Icon with Player Count Badge */}
+
+      {/* FiveM-style Hero + Side Details Panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+        {/* LEFT: Banner + identity */}
+        <div className="glass-card overflow-hidden">
+          {/* Banner */}
+          <div className="relative h-36 sm:h-52 w-full bg-gradient-to-br from-primary/30 via-[hsl(var(--cyan))]/20 to-secondary/40">
+            {data.banner && (
+              <img
+                src={data.banner}
+                alt="Server banner"
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+
+            {/* Top-right action cluster */}
+            <div className="absolute top-3 right-3 flex items-center gap-1.5">
+              {onRefresh && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onRefresh}
+                  disabled={isPolling}
+                  className="bg-card/60 backdrop-blur hover:bg-card text-muted-foreground hover:text-primary h-9 w-9"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isPolling ? 'animate-spin' : ''}`} />
+                </Button>
+              )}
+              {notificationProps && (
+                <div className="bg-card/60 backdrop-blur rounded-md">
+                  <NotificationSettingsDialog
+                    serverCode={data.licenseKeyToken?.split('_')[0] || ''}
+                    serverName={data.hostname}
+                    hasNotification={notificationProps.hasNotification}
+                    currentSettings={notificationProps.currentSettings}
+                    permissionGranted={notificationProps.permissionGranted}
+                    onRequestPermission={notificationProps.onRequestPermission}
+                    onSave={notificationProps.onSave}
+                    onRemove={notificationProps.onRemove}
+                  />
+                </div>
+              )}
+              {onToggleFavorite && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onToggleFavorite}
+                  className={`bg-card/60 backdrop-blur hover:bg-card h-9 w-9 ${isFavorite ? "text-yellow hover:text-yellow" : "text-muted-foreground hover:text-yellow"}`}
+                >
+                  <Star className={`w-4 h-4 ${isFavorite ? 'fill-yellow' : ''}`} />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="bg-card/60 backdrop-blur hover:bg-card text-muted-foreground hover:text-foreground h-9 w-9"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Identity row, overlapping the banner */}
+          <div className="px-6 pb-6 -mt-12 sm:-mt-14 flex items-end gap-4 flex-wrap">
             <div className="relative shrink-0">
-              <div className={`w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-primary/20 to-[hsl(var(--cyan))]/20 flex items-center justify-center ${iconLoading && !iconUrl ? 'animate-pulse' : ''}`}>
+              <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-card bg-gradient-to-br from-primary/20 to-[hsl(var(--cyan))]/20 flex items-center justify-center shadow-xl ${iconLoading && !iconUrl ? 'animate-pulse' : ''}`}>
                 {iconUrl && !iconError ? (
                   <img src={iconUrl} alt="Server icon" className="w-full h-full object-cover" />
                 ) : (
-                  <Server className="w-7 h-7 text-primary" />
+                  <Server className="w-10 h-10 text-primary" />
                 )}
               </div>
-              {/* Player Count Badge */}
-              <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[10px] font-bold shadow-lg border border-background animate-pulse">
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-primary text-primary-foreground text-[10px] font-bold shadow-lg border border-background whitespace-nowrap">
                 {effectivePlayerCount}/{data.maxPlayers}
               </div>
             </div>
-            <div className="min-w-0 flex-1">
+
+            <div className="min-w-0 flex-1 pt-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground break-words">
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground break-words leading-tight">
                   {stripColorCodes(data.hostname)}
                 </h2>
-                {/* Anti-Cheat Badges */}
                 {detectedAntiCheats.length > 0 && detectedAntiCheats.map((ac) => (
                   <Tooltip key={ac.name}>
                     <TooltipTrigger asChild>
-                      <Badge 
-                        className="text-xs font-semibold bg-[hsl(var(--green))]/20 text-[hsl(var(--green))] border border-[hsl(var(--green))]/40 animate-fade-in gap-1"
-                      >
+                      <Badge className="text-xs font-semibold bg-[hsl(var(--green))]/20 text-[hsl(var(--green))] border border-[hsl(var(--green))]/40 gap-1">
                         <ShieldCheck className="w-3.5 h-3.5" />
                         {ac.name}
                       </Badge>
@@ -243,104 +303,166 @@ const ServerDetails = ({
               {data.projectName && (
                 <p className="text-muted-foreground text-sm mt-1">{data.projectName}</p>
               )}
-              <div className="flex flex-wrap items-center gap-3 mt-3">
-                {data.ip && (
-                  <button
-                    onClick={() => copyToClipboard(`${data.ip}:${data.port}`, "IP Address")}
-                    className="flex items-center gap-2 text-primary text-sm hover:underline"
-                  >
-                    <SensitiveText type="ip" as="span" className="font-mono">
-                      {data.ip}:{data.port}
-                    </SensitiveText>
-                    <Copy className="w-3.5 h-3.5" />
-                  </button>
+
+              {/* Chip row: gametype, map, locale */}
+              <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                {data.gametype && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary/70 border border-border/40 text-xs text-foreground/90">
+                    <Server className="w-3 h-3" /> {data.gametype}
+                  </span>
                 )}
-                {getConnectionString() && (
-                  <button
-                    onClick={() => copyToClipboard(getConnectionString()!, "Connect Command")}
-                    className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm hover:bg-primary/30 transition-colors"
-                  >
-                    <span className="font-mono text-xs">connect</span>
-                    <Copy className="w-3 h-3" />
-                  </button>
+                {data.mapname && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary/70 border border-border/40 text-xs text-foreground/90">
+                    <MapPin className="w-3 h-3" /> {data.mapname}
+                  </span>
+                )}
+                {data.locale && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary/70 border border-border/40 text-xs text-foreground/90 uppercase">
+                    <Globe className="w-3 h-3" /> {data.locale}
+                  </span>
+                )}
+                {data.enforceGameBuild && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary/70 border border-border/40 text-xs text-foreground/90">
+                    Build {data.enforceGameBuild}
+                  </span>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {onRefresh && (
+
+          {/* Action row */}
+          <div className="px-6 pb-6 flex flex-wrap items-center gap-3">
+            {getConnectionString() && (
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={onRefresh}
-                disabled={isPolling}
-                className="text-muted-foreground hover:text-primary"
+                onClick={() => copyToClipboard(getConnectionString()!, "Connect Command")}
+                className="bg-[hsl(var(--red))] hover:bg-[hsl(var(--red))]/90 text-white font-semibold px-6 rounded-full shadow-md"
               >
-                <RefreshCw className={`w-5 h-5 ${isPolling ? 'animate-spin' : ''}`} />
+                Forbindelse
               </Button>
             )}
-            {notificationProps && (
-              <NotificationSettingsDialog
-                serverCode={data.licenseKeyToken?.split('_')[0] || ''}
-                serverName={data.hostname}
-                hasNotification={notificationProps.hasNotification}
-                currentSettings={notificationProps.currentSettings}
-                permissionGranted={notificationProps.permissionGranted}
-                onRequestPermission={notificationProps.onRequestPermission}
-                onSave={notificationProps.onSave}
-                onRemove={notificationProps.onRemove}
-              />
-            )}
-            {onToggleFavorite && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={onToggleFavorite}
-                className={isFavorite ? "text-yellow hover:text-yellow" : "text-muted-foreground hover:text-yellow"}
+            {data.ip && (
+              <button
+                onClick={() => copyToClipboard(`${data.ip}:${data.port}`, "IP Address")}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-secondary/60 border border-border/40 text-sm hover:bg-secondary transition-colors"
+                title="Copy IP"
               >
-                <Star className={`w-5 h-5 ${isFavorite ? 'fill-yellow' : ''}`} />
-              </Button>
+                <SensitiveText type="ip" as="span" className="font-mono text-xs text-foreground/90">
+                  {data.ip}:{data.port}
+                </SensitiveText>
+                <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
             )}
-            <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0">
-              <X className="w-5 h-5" />
-            </Button>
+            {lastUpdate && (
+              <span className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Clock className="w-3.5 h-3.5" />
+                Updated {formatDistanceToNow(lastUpdate, { addSuffix: true })}
+                {isPolling && <span className="text-primary animate-pulse">· refreshing</span>}
+              </span>
+            )}
           </div>
+
+          {/* Tags */}
+          {data.tags && (
+            <div className="px-6 pb-6 pt-4 border-t border-border/40 flex flex-wrap gap-2">
+              {parseTags(data.tags).map((tag, idx) => (
+                <Badge key={idx} variant="secondary" className="text-xs">
+                  <Tag className="w-3 h-3 mr-1" />
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Live Status */}
-        {lastUpdate && (
-          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/50 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            <span>Updated {formatDistanceToNow(lastUpdate, { addSuffix: true })}</span>
-            {isPolling && <span className="text-primary animate-pulse">(refreshing...)</span>}
+        {/* RIGHT: Details side panel */}
+        <aside className="glass-card p-5 space-y-5 lg:sticky lg:top-4 h-fit">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Eye className="w-4 h-4 text-primary" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Details</h3>
+            </div>
+            <div className="space-y-3 text-sm">
+              {serverCode && (
+                <button
+                  onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
+                  className="w-full inline-flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-secondary/60 border border-border/40 hover:bg-secondary transition-colors text-left"
+                >
+                  <span className="font-mono text-xs text-foreground/90 truncate">cfx.re/join/{serverCode}</span>
+                  <Copy className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                </button>
+              )}
+              {data.projectName && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground text-xs">Project</span>
+                  <span className="text-foreground text-xs font-medium text-right truncate">{data.projectName}</span>
+                </div>
+              )}
+              {data.ownerName && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground text-xs">Developer</span>
+                  {data.ownerProfile ? (
+                    <a
+                      href={data.ownerProfile}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary text-xs font-medium hover:underline text-right truncate inline-flex items-center gap-1"
+                    >
+                      {data.ownerName} <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-foreground text-xs font-medium text-right truncate">{data.ownerName}</span>
+                  )}
+                </div>
+              )}
+              {data.discordGuildId && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground text-xs">Discord</span>
+                  <a
+                    href={`https://discord.gg/${data.discordGuildId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary text-xs font-medium hover:underline text-right truncate inline-flex items-center gap-1"
+                  >
+                    Join server <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-muted-foreground text-xs">Players</span>
+                <span className="text-foreground text-xs font-semibold">{effectivePlayerCount}/{data.maxPlayers}</span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-muted-foreground text-xs">Access</span>
+                <span className={`text-xs font-medium ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}>
+                  {data.private ? 'Private' : 'Public'}
+                </span>
+              </div>
+            </div>
           </div>
-        )}
 
-        {/* Tags */}
-        {data.tags && (
-          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border/50">
-            {parseTags(data.tags).map((tag, idx) => (
-              <Badge key={idx} variant="secondary" className="text-xs hover:scale-105 transition-transform">
-                <Tag className="w-3 h-3 mr-1" />
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
+          {/* Resources quick stat */}
+          {data.resources.length > 0 && (
+            <div className="pt-4 border-t border-border/40">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Resources</h3>
+                <span className="text-xs text-muted-foreground tabular-nums">{data.resources.length}</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {data.resources.slice(0, 6).map((r) => (
+                  <span key={r} className="px-2 py-0.5 rounded bg-secondary/60 border border-border/40 text-[10px] font-mono text-foreground/80 truncate max-w-[120px]">
+                    {r}
+                  </span>
+                ))}
+                {data.resources.length > 6 && (
+                  <span className="px-2 py-0.5 rounded bg-secondary/40 border border-border/40 text-[10px] text-muted-foreground">
+                    +{data.resources.length - 6} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </aside>
       </div>
-
-      {/* Banner Image */}
-      {data.banner && (
-        <div className="glass-card overflow-hidden">
-          <img 
-            src={data.banner} 
-            alt="Server Banner" 
-            className="w-full h-32 sm:h-48 object-cover"
-            loading="lazy"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-          />
-        </div>
-      )}
 
       {/* Project Description */}
       {data.projectDesc && (
@@ -354,6 +476,7 @@ const ServerDetails = ({
           </div>
         </div>
       )}
+
 
       {/* Server Info Grid */}
       <div className="glass-card p-6">
