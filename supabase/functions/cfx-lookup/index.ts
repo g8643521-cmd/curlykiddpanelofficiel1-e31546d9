@@ -80,13 +80,17 @@ const shapeFromInfoDynamic = (
 
 const tryDirect = async (host: string, port: number) => {
   const base = `http://${host}:${port}`;
+  const directHeaders = {
+    "User-Agent": "CitizenFX/1 (CurlyKiddPanel; +https://curlykiddpanel.lovable.app)",
+    Accept: "application/json",
+  };
   try {
     const [infoRes, dynRes, playersRes] = await Promise.all([
-      fetch(`${base}/info.json`, { signal: AbortSignal.timeout(7000) }),
-      fetch(`${base}/dynamic.json`, { signal: AbortSignal.timeout(7000) }),
-      fetch(`${base}/players.json`, { signal: AbortSignal.timeout(7000) }).catch(() => null),
+      fetch(`${base}/info.json`, { headers: directHeaders, signal: AbortSignal.timeout(7000) }).catch(() => null),
+      fetch(`${base}/dynamic.json`, { headers: directHeaders, signal: AbortSignal.timeout(7000) }).catch(() => null),
+      fetch(`${base}/players.json`, { headers: directHeaders, signal: AbortSignal.timeout(7000) }).catch(() => null),
     ]);
-    if (!infoRes.ok || !dynRes.ok) return null;
+    if (!infoRes || !dynRes || !infoRes.ok || !dynRes.ok) return null;
     const info = await infoRes.json().catch(() => null);
     const dynamic = await dynRes.json().catch(() => null);
     const players = playersRes && playersRes.ok ? await playersRes.json().catch(() => null) : null;
@@ -165,15 +169,22 @@ Deno.serve(async (req) => {
     const serverCode = cleanCode(rawInput);
     if (!serverCode) return json({ success: false, error: "Valid serverCode is required", invalid: true });
 
-    const upstream = await fetchUpstream(serverCode);
+    // Run the master-list lookup AND the join-code resolution in parallel.
+    // The master list returns 404 for many valid join codes — so we always
+    // prepare a direct-query fallback even before we see the upstream result.
+    const [upstream, resolved] = await Promise.all([
+      fetchUpstream(serverCode),
+      resolveJoinCode(serverCode),
+    ]);
+
+    const tryDirectFallback = async () => {
+      if (!resolved) return null;
+      return await tryDirect(resolved.host, resolved.port);
+    };
 
     if (upstream.kind === "notfound") {
-      // Fallback: resolve via cfx.re join page header and query the server directly
-      const resolved = await resolveJoinCode(serverCode);
-      if (resolved) {
-        const direct = await tryDirect(resolved.host, resolved.port);
-        if (direct) return json({ ...direct, server: serverCode });
-      }
+      const direct = await tryDirectFallback();
+      if (direct) return json({ ...direct, server: serverCode });
       return json({
         success: false,
         error: "Server not listed in FiveM master list",
@@ -185,6 +196,9 @@ Deno.serve(async (req) => {
 
 
     if (upstream.kind === "error") {
+      // Master list failed (network/5xx). Try direct before giving up.
+      const direct = await tryDirectFallback();
+      if (direct) return json({ ...direct, server: serverCode });
       return json({
         success: false,
         error: `FiveM upstream error (${upstream.status || "network"})`,
