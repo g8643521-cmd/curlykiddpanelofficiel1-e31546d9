@@ -95,18 +95,30 @@ export const prefetchServerIcon = (serverCode?: string | null, version?: number 
   return fetchServerIcon(serverCode, version);
 };
 
-export const useServerIcon = (serverCode?: string | null, version?: number | null) => {
+export const useServerIcon = (
+  serverCode?: string | null,
+  version?: number | null,
+  overrideUrl?: string | null,
+) => {
   const [iconUrl, setIconUrl] = useState<string | null>(() => {
+    if (overrideUrl) return overrideUrl;
     if (!serverCode) return null;
     return getCachedIcon(serverCode, version) ?? null;
   });
   const [iconLoading, setIconLoading] = useState(() => {
+    if (overrideUrl) return false;
     if (!serverCode) return false;
     return getCachedIcon(serverCode, version) === undefined;
   });
   const [iconError, setIconError] = useState(false);
 
   useEffect(() => {
+    if (overrideUrl) {
+      setIconUrl(overrideUrl);
+      setIconLoading(false);
+      setIconError(false);
+      return;
+    }
     if (!serverCode) {
       setIconUrl(null);
       setIconLoading(false);
@@ -141,7 +153,7 @@ export const useServerIcon = (serverCode?: string | null, version?: number | nul
     return () => {
       isCancelled = true;
     };
-  }, [serverCode, version]);
+  }, [serverCode, version, overrideUrl]);
 
   return {
     iconUrl,
