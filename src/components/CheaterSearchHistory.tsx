@@ -139,8 +139,15 @@ const Item = memo(({
           </AvatarFallback>
         </Avatar>
       ) : (
-        <div className={`w-12 h-12 shrink-0 rounded-lg flex items-center justify-center border ${hasHits || flagged ? "bg-destructive/15 border-destructive/40 text-destructive" : "bg-muted/30 border-border/40 text-muted-foreground"}`}>
-          {hasHits || flagged ? <AlertTriangle className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
+        <div className={`w-12 h-12 shrink-0 rounded-lg overflow-hidden border ${hasHits || flagged ? "border-destructive/40" : "border-border/40"}`}>
+          <img
+            src={defaultCheaterIcon}
+            alt={displayName || item.query}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            width={48}
+            height={48}
+          />
         </div>
       )}
 
