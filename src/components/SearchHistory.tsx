@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from "react";
-import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check, ArrowUpRight } from "lucide-react";
+import { History, Server, Trash2, ArrowRight, Loader2, Copy, Check, ArrowUpRight, ImageIcon } from "lucide-react";
 import { HistoryGlyph } from "@/components/icons/PanelIcons";
 import { Button } from "@/components/ui/button";
 import { SearchHistoryItem } from "@/hooks/useSearchHistory";
@@ -8,6 +8,15 @@ import { stripColorCodes } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useServerIcon } from "@/hooks/useServerIcon";
 import { toast } from "@/hooks/use-toast";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { useCustomIcons } from "@/hooks/useCustomIcons";
+import CustomIconDialog from "@/components/CustomIconDialog";
 
 interface SearchHistoryProps {
   history: SearchHistoryItem[];
@@ -31,8 +40,12 @@ const HistoryItem = memo(({
   onRemove?: (id: string) => void | Promise<void> | Promise<boolean>;
 }) => {
   const { iconUrl } = useServerIcon(item.query);
+  const { get: getCustomIcon, set: setCustomIcon, remove: removeCustomIcon } = useCustomIcons("server");
+  const customIcon = getCustomIcon(item.query);
+  const effectiveIcon = customIcon || iconUrl;
   const [copied, setCopied] = useState(false);
   const [showRemove, setShowRemove] = useState(false);
+  const [iconDialogOpen, setIconDialogOpen] = useState(false);
 
   const displayName = stripColorCodes(
     item.search_type && item.search_type !== "server" ? item.search_type : item.query
@@ -81,6 +94,9 @@ const HistoryItem = memo(({
   const hostname = item.search_type && item.search_type !== "server" ? item.search_type : null;
 
   return (
+    <>
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
     <div
       role="button"
       tabIndex={0}
@@ -99,8 +115,8 @@ const HistoryItem = memo(({
         <div className="w-14 h-14 rounded-xl overflow-hidden bg-secondary/60 border border-border/40 flex items-center justify-center">
           {isSelecting ? (
             <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-          ) : iconUrl ? (
-            <img src={iconUrl} alt="" className="w-full h-full object-cover" />
+          ) : effectiveIcon ? (
+            <img src={effectiveIcon} alt="" className="w-full h-full object-cover" />
           ) : (
             <Server className="w-6 h-6 text-muted-foreground" />
           )}
@@ -214,6 +230,44 @@ const HistoryItem = memo(({
         <ArrowRight className="hidden sm:inline-block w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition-all ml-1" />
       </div>
     </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-56">
+        <ContextMenuItem onClick={() => setIconDialogOpen(true)}>
+          <ImageIcon className="w-4 h-4 mr-2" />
+          {customIcon ? "Change custom icon" : "Set custom icon"}
+        </ContextMenuItem>
+        {customIcon && (
+          <ContextMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={() => removeCustomIcon(item.query)}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Reset icon
+          </ContextMenuItem>
+        )}
+        {onRemove && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => void onRemove(item.id)}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Remove from history
+            </ContextMenuItem>
+          </>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
+    <CustomIconDialog
+      open={iconDialogOpen}
+      onOpenChange={setIconDialogOpen}
+      title={`Custom icon for ${displayName}`}
+      currentIcon={customIcon}
+      onSave={(v) => setCustomIcon(item.query, v)}
+      onClear={() => removeCustomIcon(item.query)}
+    />
+    </>
   );
 });
 
