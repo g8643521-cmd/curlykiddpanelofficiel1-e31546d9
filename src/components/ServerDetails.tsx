@@ -121,7 +121,7 @@ const ServerDetails = ({
   void getVisibility;
   // Use the passed server code, or extract from license key token as fallback
   const serverCode = propServerCode || data.licenseKeyToken?.split("_")[0] || null;
-  const { iconUrl, iconLoading, iconError } = useServerIcon(propServerCode, data.iconVersion);
+  const { iconUrl, iconLoading, iconError } = useServerIcon(propServerCode, data.iconVersion, data.iconDataUrl);
 
   // Check for cheaters among current players - memoize to prevent disappearing on refresh
   const cheaterMatches = useMemo(() => {

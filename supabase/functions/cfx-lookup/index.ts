@@ -21,21 +21,34 @@ const parseIpPort = (raw: string): { host: string; port: number } | null => {
   return null;
 };
 
-const shapeFromInfoDynamic = (info: any, dynamic: any, host: string, port: number) => {
+const shapeFromInfoDynamic = (
+  info: any,
+  dynamic: any,
+  players: any[] | null,
+  host: string,
+  port: number,
+) => {
   const vars = info?.vars || {};
+  const iconB64 = typeof info?.icon === "string" ? info.icon : null;
+  const playerList = Array.isArray(players) && players.length
+    ? players
+    : Array.isArray(dynamic?.players)
+      ? dynamic.players
+      : [];
   return {
     success: true,
     direct: true,
     hostname: dynamic?.hostname || vars.sv_projectName || `${host}:${port}`,
-    players: Array.isArray(dynamic?.players) ? dynamic.players : [],
-    playerCount: Number(dynamic?.clients ?? 0),
+    players: playerList,
+    playerCount: Number(dynamic?.clients ?? playerList.length ?? 0),
     maxPlayers: Number(dynamic?.sv_maxclients || vars.sv_maxClients || 0),
     resources: Array.isArray(info?.resources) ? info.resources : [],
     server: `${host}:${port}`,
     vars,
     ip: host,
     port,
-    iconVersion: info?.icon ? 1 : null,
+    iconVersion: iconB64 ? 1 : null,
+    iconDataUrl: iconB64 ? `data:image/png;base64,${iconB64}` : null,
     ownerName: null,
     ownerProfile: null,
     ownerAvatar: null,
@@ -50,21 +63,28 @@ const shapeFromInfoDynamic = (info: any, dynamic: any, host: string, port: numbe
     banner: vars.banner_detail || vars.banner_connecting || null,
     gametype: dynamic?.gametype || vars.gametype || null,
     mapname: dynamic?.mapname || vars.mapname || null,
+    endpointCapabilities: {
+      infoJson: true,
+      dynamicJson: true,
+      playersJson: Array.isArray(players),
+    },
   };
 };
 
 const tryDirect = async (host: string, port: number) => {
   const base = `http://${host}:${port}`;
   try {
-    const [infoRes, dynRes] = await Promise.all([
+    const [infoRes, dynRes, playersRes] = await Promise.all([
       fetch(`${base}/info.json`, { signal: AbortSignal.timeout(7000) }),
       fetch(`${base}/dynamic.json`, { signal: AbortSignal.timeout(7000) }),
+      fetch(`${base}/players.json`, { signal: AbortSignal.timeout(7000) }).catch(() => null),
     ]);
     if (!infoRes.ok || !dynRes.ok) return null;
     const info = await infoRes.json().catch(() => null);
     const dynamic = await dynRes.json().catch(() => null);
+    const players = playersRes && playersRes.ok ? await playersRes.json().catch(() => null) : null;
     if (!info || !dynamic) return null;
-    return shapeFromInfoDynamic(info, dynamic, host, port);
+    return shapeFromInfoDynamic(info, dynamic, Array.isArray(players) ? players : null, host, port);
   } catch {
     return null;
   }

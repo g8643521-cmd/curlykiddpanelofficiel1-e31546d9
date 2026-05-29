@@ -43,6 +43,7 @@ export interface ServerData {
   ownerProfile?: string | null;
   ownerAvatar?: string | null;
   iconVersion?: number | null;
+  iconDataUrl?: string | null;
   private?: boolean;
   fallback?: boolean;
   upvotePower?: number;
