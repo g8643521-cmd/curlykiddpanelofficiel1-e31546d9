@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useCustomIcons } from "@/hooks/useCustomIcons";
 import CustomIconDialog from "@/components/CustomIconDialog";
-import defaultCheaterIcon from "@/assets/default-cheater-icon.png";
+import defaultCheaterIcon from "@/assets/default-cheater-icon.jpg";
 
 const typeLabel = (t?: string) => {
   switch (t) {

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useCustomIcons } from "@/hooks/useCustomIcons";
 import CustomIconDialog from "@/components/CustomIconDialog";
-import defaultServerIcon from "@/assets/default-server-icon.png";
+import defaultServerIcon from "@/assets/default-server-icon.jpg";
 
 interface SearchHistoryProps {
   history: SearchHistoryItem[];
