@@ -1,33 +1,27 @@
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ErrorCardProps {
   title?: string;
-  /** User-facing description. */
   message?: string;
-  /** Optional technical details, hidden by default. */
   details?: string | null;
-  /** Retry handler. If omitted, no retry button is shown. */
   onRetry?: () => void;
-  /** Whether a retry is currently running (disables the button). */
   isRetrying?: boolean;
+  onDismiss?: () => void;
+  dismissLabel?: string;
   className?: string;
-  /** Compact layout for small areas. */
   compact?: boolean;
 }
 
-/**
- * Inline error card with an optional Retry action. Used everywhere data
- * fails to load — never replace this with a blank component or an
- * infinite spinner.
- */
 export function ErrorCard({
   title = "Something went wrong",
   message = "We couldn't load this data. Please try again.",
   details,
   onRetry,
   isRetrying = false,
+  onDismiss,
+  dismissLabel = "Dismiss",
   className,
   compact = false,
 }: ErrorCardProps) {
@@ -35,13 +29,23 @@ export function ErrorCard({
     <div
       role="alert"
       className={cn(
-        "rounded-lg border border-destructive/30 bg-destructive/5 text-destructive-foreground",
+        "relative rounded-lg border border-destructive/30 bg-destructive/5 text-destructive-foreground",
         compact ? "p-3" : "p-5",
         "flex flex-col gap-3",
         className,
       )}
     >
-      <div className="flex items-start gap-3">
+      {onDismiss ? (
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label={dismissLabel}
+          className="absolute top-2 right-2 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+        >
+          <X className="h-4 w-4" aria-hidden />
+        </button>
+      ) : null}
+      <div className="flex items-start gap-3 pr-6">
         <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" aria-hidden />
         <div className="flex-1 min-w-0">
           <p className="font-medium text-foreground text-sm">{title}</p>
