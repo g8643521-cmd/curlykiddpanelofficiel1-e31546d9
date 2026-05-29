@@ -194,6 +194,8 @@ const ServerDetails = ({
     return null;
   };
 
+  const website = (data.vars?.sv_projectWebsite || data.vars?.website || data.vars?.Website || data.vars?.sv_website || '').toString().trim();
+
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
       {/* Cheater Warning Banner */}
@@ -508,12 +510,8 @@ const ServerDetails = ({
             Report Server
           </button>
         </aside>
-
-              </div>
-            </div>
-          )}
-        </aside>
       </div>
+
 
       {/* Project Description */}
       {data.projectDesc && (
