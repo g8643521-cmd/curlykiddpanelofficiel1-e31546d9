@@ -394,9 +394,14 @@ const CheaterSearchHistory = () => {
 
       {history.length === 0 ? (
         <div className="text-center py-10">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-destructive" />
-          </div>
+          <img
+            src={defaultCheaterIcon}
+            alt="Cheater searches"
+            width={96}
+            height={96}
+            loading="lazy"
+            className="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-[0_0_18px_hsl(var(--destructive)/0.35)]"
+          />
           <p className="text-muted-foreground">No cheater searches yet</p>
           <p className="text-sm text-muted-foreground mt-1">
             Every player lookup you run will be logged here.
