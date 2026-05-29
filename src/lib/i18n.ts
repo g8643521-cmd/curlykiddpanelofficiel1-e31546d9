@@ -38,6 +38,9 @@ const translations: Record<string, Record<Lang, string>> = {
   "lookup.invalid_code": { en: "Please enter a valid server code or CFX URL", da: "Indtast en gyldig serverkode eller CFX URL" },
   "lookup.loaded": { en: "Server data loaded successfully", da: "Server data indlæst" },
   "lookup.details": { en: "Details", da: "Detaljer" },
+  "lookup.failed": { en: "Server lookup failed", da: "Serveropslag mislykkedes" },
+  "lookup.not_found": { en: "Server not listed in FiveM's public master list. It may be private, whitelisted, offline, or the code is wrong. Tip: try entering the address as IP:PORT (e.g. 1.2.3.4:30120) for a direct lookup.", da: "Serveren er ikke på FiveM's offentlige liste. Den er måske privat, whitelisted, offline eller koden er forkert. Tip: prøv at indtaste adressen som IP:PORT (fx 1.2.3.4:30120) for direkte opslag." },
+  "lookup.dismiss": { en: "Dismiss", da: "Luk" },
 
   // ── Landing page (Index) ──
   "index.hero_title_1": { en: "FiveM Server", da: "FiveM Server" },
