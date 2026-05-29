@@ -300,6 +300,40 @@ const Item = memo(({
         </button>
       </div>
     </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-56">
+        <ContextMenuItem onClick={() => setIconDialogOpen(true)}>
+          <ImageIcon className="w-4 h-4 mr-2" />
+          {customIcon ? "Change custom icon" : "Set custom icon"}
+        </ContextMenuItem>
+        {customIcon && (
+          <ContextMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={() => removeCustomIcon(item.query)}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Reset icon
+          </ContextMenuItem>
+        )}
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          className="text-destructive focus:text-destructive"
+          onClick={() => void onRemove(item.id)}
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Remove from history
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+    <CustomIconDialog
+      open={iconDialogOpen}
+      onOpenChange={setIconDialogOpen}
+      title={`Custom icon for ${displayName || item.query}`}
+      currentIcon={customIcon}
+      onSave={(v) => setCustomIcon(item.query, v)}
+      onClear={() => removeCustomIcon(item.query)}
+    />
+    </>
   );
 });
 Item.displayName = "CheaterSearchHistoryItem";
