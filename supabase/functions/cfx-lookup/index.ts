@@ -96,6 +96,24 @@ const fetchUpstream = async (serverCode: string) => {
   return { kind: "error" as const, status: 0 };
 };
 
+const resolveJoinCode = async (code: string): Promise<{ host: string; port: number } | null> => {
+  try {
+    const res = await fetch(`https://cfx.re/join/${code}`, {
+      method: "HEAD",
+      redirect: "manual",
+      headers: { "User-Agent": "Mozilla/5.0" },
+      signal: AbortSignal.timeout(6000),
+    });
+    const url = res.headers.get("x-citizenfx-url");
+    if (!url) return null;
+    const m = url.match(/^https?:\/\/([a-zA-Z0-9.\-]+):(\d{2,5})/);
+    if (!m) return null;
+    return { host: m[1], port: Number(m[2]) };
+  } catch {
+    return null;
+  }
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
 
@@ -123,6 +141,12 @@ Deno.serve(async (req) => {
     const upstream = await fetchUpstream(serverCode);
 
     if (upstream.kind === "notfound") {
+      // Fallback: resolve via cfx.re join page header and query the server directly
+      const resolved = await resolveJoinCode(serverCode);
+      if (resolved) {
+        const direct = await tryDirect(resolved.host, resolved.port);
+        if (direct) return json({ ...direct, server: serverCode });
+      }
       return json({
         success: false,
         error: "Server not listed in FiveM master list",
@@ -131,6 +155,7 @@ Deno.serve(async (req) => {
         hint: "The server may be private/whitelisted, offline, or the code is incorrect. You can also enter the server as IP:PORT (e.g. 1.2.3.4:30120) for a direct lookup.",
       });
     }
+
 
     if (upstream.kind === "error") {
       return json({
