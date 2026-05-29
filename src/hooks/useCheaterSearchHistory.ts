@@ -2,12 +2,37 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthReady } from "@/hooks/useAuthReady";
 
+export interface CheaterSearchMetadata {
+  sx_username?: string | null;
+  sx_avatar_url?: string | null;
+  sx_avatar_hash?: string | null;
+  sx_discord_id?: string | null;
+  sx_tickets?: number;
+  sx_guilds?: number;
+  sx_flagged?: boolean;
+  sx_guild_names?: string[];
+  db_confirmed?: number;
+  db_suspected?: number;
+  db_total?: number;
+  query_type?: "discord" | "steam" | "fivem" | "license" | "name";
+  source?: "cheaters_db" | "player_locator";
+}
+
 export interface CheaterSearchHistoryItem {
   id: string;
   query: string;
   created_at: string;
   results_count: number | null;
+  metadata: CheaterSearchMetadata;
 }
+
+const detectQueryType = (q: string): CheaterSearchMetadata["query_type"] => {
+  if (/^\d{17,19}$/.test(q)) return "discord";
+  if (/^steam:/i.test(q) || /^[a-f0-9]{15,17}$/i.test(q)) return "steam";
+  if (/^fivem:/i.test(q)) return "fivem";
+  if (/^license:/i.test(q) || /^[a-f0-9]{40}$/i.test(q)) return "license";
+  return "name";
+};
 
 export const useCheaterSearchHistory = () => {
   const { user, isReady, isAuthenticated } = useAuthReady();
@@ -26,7 +51,7 @@ export const useCheaterSearchHistory = () => {
       }
       const { data, error } = await supabase
         .from("search_history")
-        .select("id, query, created_at, player_count")
+        .select("id, query, created_at, player_count, metadata")
         .eq("user_id", user.id)
         .eq("search_type", "cheater")
         .order("created_at", { ascending: false })
@@ -34,11 +59,12 @@ export const useCheaterSearchHistory = () => {
       if (error) throw error;
       if (seqRef.current !== seq) return;
       setHistory(
-        (data || []).map((r) => ({
+        (data || []).map((r: any) => ({
           id: r.id,
           query: r.query,
           created_at: r.created_at,
           results_count: r.player_count,
+          metadata: (r.metadata as CheaterSearchMetadata) || {},
         }))
       );
     } catch (err) {
@@ -53,12 +79,15 @@ export const useCheaterSearchHistory = () => {
   }, [fetchHistory, isReady]);
 
   const logCheaterSearch = useCallback(
-    async (query: string, resultsCount: number) => {
+    async (query: string, resultsCount: number, metadata: CheaterSearchMetadata = {}) => {
       try {
         const { data: session } = await supabase.auth.getSession();
         const uid = session?.session?.user?.id;
         if (!uid) return;
-        // Remove existing entry for the same query, then insert
+        const meta: CheaterSearchMetadata = {
+          query_type: detectQueryType(query),
+          ...metadata,
+        };
         await supabase
           .from("search_history")
           .delete()
@@ -71,6 +100,7 @@ export const useCheaterSearchHistory = () => {
           search_type: "cheater",
           player_count: resultsCount,
           max_players: 0,
+          metadata: meta,
         });
         void fetchHistory();
       } catch (err) {

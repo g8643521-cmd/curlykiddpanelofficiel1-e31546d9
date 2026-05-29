@@ -225,8 +225,31 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
       setExternalResult(sxResult);
       setHasPlayerSearched(true);
 
-      // Log this cheater search to history
-      void logCheaterSearch(searchQuery, records.length);
+      // Log this cheater search to history with rich metadata
+      const allTicketsForLog = [
+        ...((sxResult?.tickets as any[]) || []),
+        ...((sxResult?.tickets_v2 as any[]) || []),
+      ];
+      const guildNamesForLog = [...new Set(allTicketsForLog.map((t: any) => t.guild_name || t.guildname).filter(Boolean))] as string[];
+      const sxAvatarUrlForLog = sxResult?.discord_user?.avatar
+        ? `https://cdn.discordapp.com/avatars/${searchQuery}/${sxResult.discord_user.avatar}.${String(sxResult.discord_user.avatar).startsWith('a_') ? 'gif' : 'png'}?size=128`
+        : null;
+      const confirmedForLog = records.filter((r) => r.status === 'confirmed').length;
+      const suspectedForLog = records.filter((r) => r.status === 'suspected').length;
+      void logCheaterSearch(searchQuery, records.length, {
+        source: 'player_locator',
+        sx_discord_id: isDiscordId ? searchQuery : null,
+        sx_username: sxResult?.discord_user?.global_name || sxResult?.discord_user?.username || null,
+        sx_avatar_url: sxAvatarUrlForLog,
+        sx_avatar_hash: sxResult?.discord_user?.avatar || null,
+        sx_tickets: (sxResult?.summary?.total_tickets || 0) + ((sxResult?.summary as any)?.total_tickets_v2 || 0),
+        sx_guilds: sxResult?.summary?.total_guild_records || 0,
+        sx_flagged: !!(sxResult?.summary?.is_flagged || sxResult?.flagged),
+        sx_guild_names: guildNamesForLog,
+        db_confirmed: confirmedForLog,
+        db_suspected: suspectedForLog,
+        db_total: records.length,
+      });
 
 
       // Send Discord webhook notification
@@ -295,7 +318,7 @@ const UnifiedSearch = ({ onServerSearch, isServerLoading }: UnifiedSearchProps) 
     } else {
       // Await so the insert completes before we unmount via navigate
       try {
-        await logCheaterSearch(query.trim().toLowerCase(), 0);
+        await logCheaterSearch(query.trim().toLowerCase(), 0, { source: 'player_locator' });
       } catch (err) {
         console.error('Failed to log cheater search:', err);
       }

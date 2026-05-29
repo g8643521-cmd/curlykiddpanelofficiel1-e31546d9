@@ -66,6 +66,7 @@ import MaintenanceBanner from '@/components/MaintenanceBanner';
 import ParticleBackground from '@/components/ParticleBackground';
 import AppHeader from '@/components/AppHeader';
 import { useAdminStatus } from '@/hooks/useAdminStatus';
+import { useCheaterSearchHistory } from '@/hooks/useCheaterSearchHistory';
 import { EyeOff, ShieldAlert } from 'lucide-react';
 
 // Animated counter component
@@ -149,6 +150,7 @@ const normalizeSxDiscordUser = (response: any, payload: any) => {
 
 const CheaterSearch = () => {
   const { isAdmin, isOwner } = useAdminStatus();
+  const { logCheaterSearch } = useCheaterSearchHistory();
   const canUseAdminMode = isAdmin || isOwner;
   const [adminMode, setAdminMode] = useState<boolean>(() => {
     try { return localStorage.getItem('ckp_cheater_admin_mode') === '1'; } catch { return false; }
@@ -531,6 +533,32 @@ const CheaterSearch = () => {
     const visible = filtered.filter((c) => !isCheaterHidden(c));
     setResults(visible);
     setIsLoading(false);
+
+    // Log this cheater DB search to history with rich metadata
+    const confirmedCount = visible.filter((c) => c.status === 'confirmed').length;
+    const suspectedCount = visible.filter((c) => c.status === 'suspected').length;
+    const allTicketsForLog = [
+      ...((sxData?.tickets as any[]) || []),
+      ...((sxData?.tickets_v2 as any[]) || []),
+    ];
+    const guildNamesForLog = [...new Set(allTicketsForLog.map((t: any) => t.guild_name || t.guildname).filter(Boolean))] as string[];
+    const sxAvatarUrl = sxDiscordUserData?.avatar_url || (sxDiscordUserData?.avatar && isDiscordId
+      ? `https://cdn.discordapp.com/avatars/${query}/${sxDiscordUserData.avatar}.${sxDiscordUserData.avatar.startsWith('a_') ? 'gif' : 'png'}?size=128`
+      : null);
+    void logCheaterSearch(query, visible.length, {
+      source: 'cheaters_db',
+      sx_discord_id: isDiscordId ? query : null,
+      sx_username: sxDiscordUserData?.global_name || sxDiscordUserData?.username || null,
+      sx_avatar_url: sxAvatarUrl,
+      sx_avatar_hash: sxDiscordUserData?.avatar || null,
+      sx_tickets: (sxData?.summary?.total_tickets || 0) + (sxData?.summary?.total_tickets_v2 || 0),
+      sx_guilds: sxData?.summary?.total_guild_records || 0,
+      sx_flagged: !!(sxData?.summary?.is_flagged || sxData?.flagged),
+      sx_guild_names: guildNamesForLog,
+      db_confirmed: confirmedCount,
+      db_suspected: suspectedCount,
+      db_total: visible.length,
+    });
 
     // Send Discord webhook notification with full data
     const session = (await supabase.auth.getSession()).data.session;
