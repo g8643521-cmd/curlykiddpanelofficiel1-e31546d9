@@ -36,7 +36,7 @@ import { toast } from "sonner";
 import { ServerData } from "@/hooks/useCfxApi";
 import NotificationSettingsDialog from "@/components/NotificationSettingsDialog";
 
-import PlayerCard from "@/components/PlayerCard";
+import PlayerRowCompact from "@/components/PlayerRowCompact";
 
 import AdminResourceControl from "@/components/AdminResourceControl";
 import CheaterWarningBanner from "@/components/CheaterWarningBanner";
