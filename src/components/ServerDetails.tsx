@@ -1,17 +1,15 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { 
-  Users, 
-  Globe, 
-  MapPin, 
-  Wifi, 
-  Clock, 
-  Server, 
+import { useState, useEffect, useRef, useMemo } from "react";
+import {
+  Users,
+  Globe,
+  MapPin,
+  Wifi,
+  Clock,
+  Server,
   Search,
   Copy,
   X,
-  Shield,
   Tag,
-  Eye,
   EyeOff,
   MessageCircle,
   ChevronDown,
@@ -21,34 +19,24 @@ import {
   RefreshCw,
   Download,
   AlertTriangle,
-  Image,
   Info,
-  ShieldCheck
+  ShieldCheck,
+  Eye,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { ServerData } from "@/hooks/useCfxApi";
 import NotificationSettingsDialog from "@/components/NotificationSettingsDialog";
 
 import PlayerRowCompact from "@/components/PlayerRowCompact";
-
-import AdminResourceControl from "@/components/AdminResourceControl";
 import CheaterWarningBanner from "@/components/CheaterWarningBanner";
 import SensitiveText from "@/components/SensitiveText";
-
-
-
 import ResourceCategories from "@/components/ResourceCategories";
 import ServerOwnerCard from "@/components/ServerOwnerCard";
-
 import ResourceInspector from "@/components/ResourceInspector";
-import PlayerReputation from "@/components/PlayerReputation";
 
 
 import { useAdminStatus } from "@/hooks/useAdminStatus";
