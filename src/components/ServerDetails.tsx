@@ -1,17 +1,15 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { 
-  Users, 
-  Globe, 
-  MapPin, 
-  Wifi, 
-  Clock, 
-  Server, 
+import { useState, useEffect, useRef, useMemo } from "react";
+import {
+  Users,
+  Globe,
+  MapPin,
+  Wifi,
+  Clock,
+  Server,
   Search,
   Copy,
   X,
-  Shield,
   Tag,
-  Eye,
   EyeOff,
   MessageCircle,
   ChevronDown,
@@ -21,34 +19,24 @@ import {
   RefreshCw,
   Download,
   AlertTriangle,
-  Image,
   Info,
-  ShieldCheck
+  ShieldCheck,
+  Eye,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { ServerData } from "@/hooks/useCfxApi";
 import NotificationSettingsDialog from "@/components/NotificationSettingsDialog";
 
-import PlayerCard from "@/components/PlayerCard";
-
-import AdminResourceControl from "@/components/AdminResourceControl";
+import PlayerRowCompact from "@/components/PlayerRowCompact";
 import CheaterWarningBanner from "@/components/CheaterWarningBanner";
 import SensitiveText from "@/components/SensitiveText";
-
-
-
 import ResourceCategories from "@/components/ResourceCategories";
 import ServerOwnerCard from "@/components/ServerOwnerCard";
-
 import ResourceInspector from "@/components/ResourceInspector";
-import PlayerReputation from "@/components/PlayerReputation";
 
 
 import { useAdminStatus } from "@/hooks/useAdminStatus";
@@ -592,320 +580,307 @@ const ServerDetails = ({
         )}
       </div>
 
-      {/* Resources */}
-      <div className="glass-card p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-semibold text-foreground">
-            Server Resources ({data.resources.length})
-          </h3>
-        </div>
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search resources..."
-            value={resourceSearch}
-            onChange={(e) => setResourceSearch(e.target.value)}
-            className="pl-10 bg-secondary/50 border-border/50"
-          />
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          {displayedResources.map((resource) => (
-            <button
-              key={resource}
-              onClick={() => copyToClipboard(resource, "Resource")}
-              className="p-3 bg-secondary/50 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors text-left truncate"
-            >
-              {resource}
-            </button>
-          ))}
-        </div>
-        {filteredResources.length > 18 && (
-          <button
-            onClick={() => setShowAllResources(!showAllResources)}
-            className="mt-4 flex items-center gap-2 text-primary text-sm hover:underline mx-auto"
-          >
-            {showAllResources ? (
-              <>Show Less <ChevronUp className="w-4 h-4" /></>
-            ) : (
-              <>Show All ({filteredResources.length}) <ChevronDown className="w-4 h-4" /></>
+      {/* ============ ONLINE PLAYERS — FLAGSHIP ============ */}
+      {(() => {
+        const buckets = data.players.reduce(
+          (acc, p) => {
+            if (p.ping <= 50) acc.excellent++;
+            else if (p.ping <= 100) acc.good++;
+            else if (p.ping <= 150) acc.moderate++;
+            else acc.poor++;
+            return acc;
+          },
+          { excellent: 0, good: 0, moderate: 0, poor: 0 }
+        );
+        const total = data.players.length;
+        const pct = (n: number) => (total > 0 ? (n / total) * 100 : 0);
+
+        return (
+          <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
+            {/* Status accent strip */}
+            <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/70 via-[hsl(var(--green))]/30 to-transparent" />
+
+            {/* Header */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 px-5 py-3 border-b border-border/30 bg-background/20">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[hsl(var(--green))]" />
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
+                    Online Players
+                  </h3>
+                </div>
+                <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3">
+                  {effectivePlayerCount} live · avg {avgPing || "—"}ms
+                </span>
+                {data.players.length === 0 && effectivePlayerCount > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[hsl(var(--yellow))]/15 text-[hsl(var(--yellow))] cursor-help">
+                        <EyeOff className="w-2.5 h-2.5" />
+                        Names hidden
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>This server does not expose player names via the public API.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+
+              {data.players.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const names = data.players.map((p) => p.name).join("\n");
+                      navigator.clipboard.writeText(names);
+                      toast.success(`Copied ${data.players.length} player names`);
+                    }}
+                    className="h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                  >
+                    <Copy className="w-3 h-3 mr-1.5" />
+                    Copy all
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const headers = ["Index", "Name", "ID", "Ping", "Steam", "Discord", "FiveM", "License"];
+                      const rows = data.players.map((p, idx) => {
+                        const ids = p.identifiers || [];
+                        const steam = ids.find((i) => i.startsWith("steam:"))?.replace("steam:", "") || "";
+                        const discord = ids.find((i) => i.startsWith("discord:"))?.replace("discord:", "") || "";
+                        const fivem = ids.find((i) => i.startsWith("fivem:"))?.replace("fivem:", "") || "";
+                        const license = ids.find((i) => i.startsWith("license:"))?.replace("license:", "") || "";
+                        const escapedName = p.name.replace(/"/g, '""');
+                        return `${idx + 1},"${escapedName}",${p.id},${p.ping},"${steam}","${discord}","${fivem}","${license}"`;
+                      });
+                      const csv = [headers.join(","), ...rows].join("\n");
+                      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.download = `players_${serverCode || "export"}_${new Date().toISOString().split("T")[0]}.csv`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+                      toast.success(`Exported ${data.players.length} players`);
+                      GamificationService.onExport();
+                    }}
+                    className="h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                  >
+                    <Download className="w-3 h-3 mr-1.5" />
+                    Export CSV
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Connection-quality summary strip */}
+            {total > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-border/30 divide-x divide-border/30">
+                {[
+                  { label: "Excellent", range: "0–50ms", count: buckets.excellent, color: "hsl(var(--green))" },
+                  { label: "Good", range: "50–100ms", count: buckets.good, color: "hsl(var(--green))" },
+                  { label: "Moderate", range: "100–150ms", count: buckets.moderate, color: "hsl(var(--yellow))" },
+                  { label: "Poor", range: "150ms+", count: buckets.poor, color: "hsl(var(--red))" },
+                ].map((b) => (
+                  <div key={b.label} className="px-4 py-2.5">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                        {b.label}
+                      </span>
+                      <span className="text-[9px] font-mono text-muted-foreground/70">{b.range}</span>
+                    </div>
+                    <div className="text-base font-bold tabular-nums mt-0.5" style={{ color: b.color }}>
+                      {b.count}
+                    </div>
+                    <div className="mt-1 h-1 w-full bg-secondary/60 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct(b.count)}%`, background: b.color }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
-          </button>
-        )}
-        {data.lastSeen && (
-          <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2 text-muted-foreground text-sm">
-            <Clock className="w-4 h-4" />
-            <span>Last seen: Just now</span>
+
+            {/* Toolbar: search + sort */}
+            <div className="flex flex-col sm:flex-row gap-2 px-4 py-3 border-b border-border/30 bg-background/10">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search players by name..."
+                  value={playerSearch}
+                  onChange={(e) => setPlayerSearch(e.target.value)}
+                  className="pl-9 h-9 text-xs bg-background/40 border-border/40 focus-visible:ring-[hsl(var(--green))]/40"
+                />
+                {playerSearch && (
+                  <button
+                    onClick={() => setPlayerSearch("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <div className="inline-flex items-center rounded-md border border-border/40 bg-background/40 p-0.5">
+                {(["name", "id", "ping"] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setPlayerSort(s)}
+                    className={`px-3 h-8 text-[11px] font-medium uppercase tracking-wider rounded-[5px] transition-colors ${
+                      playerSort === s
+                        ? "bg-[hsl(var(--green))]/15 text-[hsl(var(--green))]"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Column header */}
+            <div className="grid grid-cols-12 gap-3 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-background/30 border-b border-border/30">
+              <span className="col-span-1">#</span>
+              <span className="col-span-5">Player</span>
+              <span className="col-span-2">Server ID</span>
+              <span className="col-span-2">Connection</span>
+              <span className="col-span-2 text-right">Actions</span>
+            </div>
+
+            {/* Rows */}
+            <div className="max-h-[640px] overflow-y-auto divide-y divide-border/20">
+              {sortedPlayers.length > 0 ? (
+                sortedPlayers.map((player, index) => (
+                  <PlayerRowCompact
+                    key={`${player.id}-${player.name}`}
+                    player={player}
+                    index={index}
+                    searchQuery={playerSearch}
+                    cheaterReport={isCheater(player)}
+                    serverCode={serverCode || undefined}
+                    serverName={serverNameClean}
+                    onCheaterAdded={fetchCheaters}
+                  />
+                ))
+              ) : (
+                <div className="py-12 text-center">
+                  <Users className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {effectivePlayerCount > 0
+                      ? playerSearch
+                        ? `No players match "${playerSearch}"`
+                        : "Player list not available for this server"
+                      : "No players online"}
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ============ SERVER RESOURCES ============ */}
+      <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
+        <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
+        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-border/30 bg-background/20">
+          <div className="flex items-center gap-2">
+            <Download className="w-4 h-4 text-[hsl(var(--green))]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
+              Server Resources
+            </h3>
+            <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3">
+              {data.resources.length} loaded
+            </span>
           </div>
-        )}
-      </div>
+        </div>
+        <div className="p-4">
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search resources..."
+              value={resourceSearch}
+              onChange={(e) => setResourceSearch(e.target.value)}
+              className="pl-9 h-9 text-xs bg-background/40 border-border/40"
+            />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+            {displayedResources.map((resource) => (
+              <button
+                key={resource}
+                onClick={() => copyToClipboard(resource, "Resource")}
+                className="px-2.5 py-1.5 rounded-md bg-background/40 border border-border/30 hover:border-[hsl(var(--green))]/40 hover:bg-background/60 text-[11px] font-mono text-foreground/80 hover:text-foreground transition-colors text-left truncate"
+              >
+                {resource}
+              </button>
+            ))}
+          </div>
+          {filteredResources.length > 18 && (
+            <button
+              onClick={() => setShowAllResources(!showAllResources)}
+              className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-[hsl(var(--green))] mx-auto transition-colors"
+            >
+              {showAllResources ? (
+                <>Show less <ChevronUp className="w-3.5 h-3.5" /></>
+              ) : (
+                <>Show all {filteredResources.length} <ChevronDown className="w-3.5 h-3.5" /></>
+              )}
+            </button>
+          )}
+        </div>
+      </section>
 
       {/* Resource Categories */}
       <ResourceCategories resources={data.resources} />
 
       {/* Server Owner Card */}
-      <ServerOwnerCard 
-        ownerName={data.ownerName} 
-        ownerProfile={data.ownerProfile} 
-        ownerAvatar={data.ownerAvatar} 
+      <ServerOwnerCard
+        ownerName={data.ownerName}
+        ownerProfile={data.ownerProfile}
+        ownerAvatar={data.ownerAvatar}
       />
 
-
-
-      {/* Player Distribution */}
-      <div className="glass-card p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Users className="w-5 h-5 text-primary" />
-          <h3 className="font-display text-lg font-semibold text-foreground">
-            Player Distribution
-          </h3>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="status-online" />
-            <span className="text-[hsl(var(--green))] text-sm font-medium">Online</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="flex-1">
-            <Progress value={playerPercentage} className="h-3" />
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-primary font-bold text-lg">{effectivePlayerCount}/{data.maxPlayers}</p>
-            <p className="text-muted-foreground text-xs">{playerPercentage.toFixed(1)}% Full</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Location Details */}
+      {/* ============ LOCATION ============ */}
       {data.location && (
-        <div className="glass-card p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Globe className="w-5 h-5 text-primary" />
-            <h3 className="font-display text-lg font-semibold text-foreground">
-              Location Details
+        <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
+          <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border/30 bg-background/20">
+            <Globe className="w-4 h-4 text-[hsl(var(--green))]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
+              Infrastructure
             </h3>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-muted-foreground text-sm">Country</p>
-                <p className="text-foreground font-medium">{data.location.country}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-muted-foreground text-sm">Region</p>
-                <p className="text-foreground font-medium">{data.location.region}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-muted-foreground text-sm">City</p>
-                <p className="text-foreground font-medium">{data.location.city}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Wifi className="w-5 h-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-muted-foreground text-sm">ISP</p>
-                <p className="text-foreground font-medium">{data.location.isp}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-
-      {/* Online Players - Full Width */}
-      <div className="glass-card p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
-            <div className="flex items-start sm:items-center gap-3">
-              <div className="icon-badge-green shrink-0">
-                <Users className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                  <h3 className="font-display text-lg font-semibold text-foreground whitespace-nowrap">
-                    Online Players
-                  </h3>
-                  {data.players.length > 0 ? (
-                    <Badge variant="secondary" className="text-xs bg-green/20 text-green border-green/30 w-fit">
-                      <Eye className="w-3 h-3 mr-1" />
-                      Names available
-                    </Badge>
-                  ) : effectivePlayerCount > 0 ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="secondary" className="text-xs bg-yellow/20 text-yellow border-yellow/30 cursor-help w-fit whitespace-nowrap">
-                          <EyeOff className="w-3 h-3 mr-1" />
-                          Names hidden
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs text-center">
-                        <p>This server does not expose player names via the public API. This is a server-side restriction set by the server owner for privacy reasons.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : null}
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border/20">
+            {[
+              { label: "Country", value: data.location.country, icon: MapPin },
+              { label: "Region", value: data.location.region, icon: MapPin },
+              { label: "City", value: data.location.city, icon: MapPin },
+              { label: "ISP", value: data.location.isp, icon: Wifi },
+            ].map((c) => (
+              <div key={c.label} className="px-4 py-3">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <c.icon className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                    {c.label}
+                  </span>
                 </div>
-                <p className="text-muted-foreground text-sm">
-                  {effectivePlayerCount} players currently online
-                </p>
+                <p className="text-sm font-medium text-foreground truncate">{c.value}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {data.players.length > 0 && (
-                <>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const names = data.players.map(p => p.name).join('\n');
-                          navigator.clipboard.writeText(names);
-                          toast.success(`Copied ${data.players.length} player names to clipboard`);
-                        }}
-                        className="text-xs"
-                      >
-                        <Copy className="w-3.5 h-3.5 mr-1" />
-                        Copy All
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Copy all player names to clipboard</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          // Build CSV content
-                          const headers = ['Index', 'Name', 'ID', 'Ping', 'Steam', 'Discord', 'FiveM', 'License'];
-                          const rows = data.players.map((p, idx) => {
-                            const ids = p.identifiers || [];
-                            const steam = ids.find(i => i.startsWith('steam:'))?.replace('steam:', '') || '';
-                            const discord = ids.find(i => i.startsWith('discord:'))?.replace('discord:', '') || '';
-                            const fivem = ids.find(i => i.startsWith('fivem:'))?.replace('fivem:', '') || '';
-                            const license = ids.find(i => i.startsWith('license:'))?.replace('license:', '') || '';
-                            // Escape quotes in name
-                            const escapedName = p.name.replace(/"/g, '""');
-                            return `${idx + 1},"${escapedName}",${p.id},${p.ping},"${steam}","${discord}","${fivem}","${license}"`;
-                          });
-                          const csv = [headers.join(','), ...rows].join('\n');
-                          
-                          // Download file
-                          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                          const url = URL.createObjectURL(blob);
-                          const link = document.createElement('a');
-                          link.href = url;
-                          link.download = `players_${serverCode || 'export'}_${new Date().toISOString().split('T')[0]}.csv`;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                          URL.revokeObjectURL(url);
-                          
-                          toast.success(`Exported ${data.players.length} players to CSV`);
-                          
-                          // Trigger gamification
-                          GamificationService.onExport();
-                        }}
-                        className="text-xs"
-                      >
-                        <Download className="w-3.5 h-3.5 mr-1" />
-                        Export CSV
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Export player list as CSV file</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </>
-              )}
-              <div className="text-right">
-                <p className="text-muted-foreground text-sm">Avg. Ping</p>
-                <p className="text-primary font-semibold">{avgPing}ms</p>
-              </div>
-            </div>
+            ))}
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search players..."
-                value={playerSearch}
-                onChange={(e) => setPlayerSearch(e.target.value)}
-                className="pl-10 bg-secondary/50 border-border/50"
-              />
-            </div>
-            <div className="flex gap-2">
-              {(["name", "id", "ping"] as const).map((sort) => (
-                <Button
-                  key={sort}
-                  variant={playerSort === sort ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => setPlayerSort(sort)}
-                  className={playerSort === sort ? "bg-primary text-primary-foreground" : ""}
-                >
-                  {sort.charAt(0).toUpperCase() + sort.slice(1)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2 max-h-[600px] overflow-y-auto">
-            {/* Column Headers */}
-            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border/50 sticky top-0 bg-card z-10">
-              <span className="col-span-1">#</span>
-              <span className="col-span-5">Player Name</span>
-              <span className="col-span-2">ID</span>
-              <span className="col-span-2">Ping</span>
-              <span className="col-span-2 text-right flex items-center justify-end gap-1">
-                Identifiers
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                      <Shield className="w-3 h-3" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left" className="max-w-xs text-left">
-                    <p className="font-medium mb-1">Privacy Protected</p>
-                    <p className="text-xs text-muted-foreground">
-                      Since August 2024, FiveM deprecated public access to player identifiers for security reasons. Most servers now hide this data by default.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </span>
-            </div>
-             {sortedPlayers.length > 0 ? sortedPlayers.map((player, index) => (
-               <PlayerCard 
-                 key={`${player.id}-${player.name}`} 
-                 player={player} 
-                 index={index}
-                 cheaterReport={isCheater(player)}
-                 serverCode={serverCode || undefined}
-                 serverName={serverNameClean}
-                 onCheaterAdded={fetchCheaters}
-               />
-             )) : (
-               <div className="text-center py-8 text-muted-foreground">
-                 {effectivePlayerCount > 0
-                   ? "Player list not available for this server"
-                   : "No players online"}
-               </div>
-             )}
-           </div>
-        </div>
-
+        </section>
+      )}
 
       {/* Resource Inspector */}
       {data.resources && data.resources.length > 0 && (
         <ResourceInspector resources={data.resources} />
       )}
+
 
 
     </div>
