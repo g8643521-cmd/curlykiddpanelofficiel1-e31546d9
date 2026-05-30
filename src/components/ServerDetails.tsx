@@ -206,168 +206,179 @@ const ServerDetails = ({
       )}
 
       {/* Professional Hero + Side Details Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
-        {/* LEFT: Banner + identity */}
-        <div className="rounded-2xl overflow-hidden border border-border/40 bg-card shadow-xl">
-          {/* Banner */}
-          <div className="relative h-40 sm:h-56 w-full bg-[#0f172a] overflow-hidden">
-            {data.banner && !bannerError ? (
-              <>
-                <img
-                  src={data.banner}
-                  alt="Server banner"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                  onError={() => setBannerError(true)}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
-              </>
-            ) : (
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--muted))_0%,#0b1220_60%)]" />
-            )}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
+        {/* LEFT: Compact intelligence card */}
+        <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
+          {/* Slim status accent strip */}
+          <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/70 via-[hsl(var(--green))]/30 to-transparent" />
 
-            {/* Top-right action cluster */}
-            <div className="absolute top-3 right-3 flex items-center gap-1.5">
+          {/* Top status / action bar */}
+          <div className="flex items-center justify-between gap-2 px-5 py-2.5 border-b border-border/30 bg-background/20">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--green))] opacity-60 animate-ping" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--green))]" />
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Live · Server Inspection</span>
+              {lastUpdate && (
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-muted-foreground/70 ml-2 pl-2 border-l border-border/40">
+                  <Clock className="w-3 h-3" />
+                  {formatDistanceToNow(lastUpdate, { addSuffix: true })}
+                  {isPolling && <span className="text-primary animate-pulse">· sync</span>}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-0.5">
               {onRefresh && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onRefresh}
-                  disabled={isPolling}
-                  className="bg-background/70 backdrop-blur hover:bg-background text-muted-foreground hover:text-foreground h-9 w-9"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isPolling ? 'animate-spin' : ''}`} />
+                <Button variant="ghost" size="icon" onClick={onRefresh} disabled={isPolling}
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                  <RefreshCw className={`w-3.5 h-3.5 ${isPolling ? 'animate-spin' : ''}`} />
                 </Button>
               )}
               {notificationProps && (
-                <div className="bg-background/70 backdrop-blur rounded-md">
-                  <NotificationSettingsDialog
-                    serverCode={data.licenseKeyToken?.split('_')[0] || ''}
-                    serverName={data.hostname}
-                    hasNotification={notificationProps.hasNotification}
-                    currentSettings={notificationProps.currentSettings}
-                    permissionGranted={notificationProps.permissionGranted}
-                    onRequestPermission={notificationProps.onRequestPermission}
-                    onSave={notificationProps.onSave}
-                    onRemove={notificationProps.onRemove}
-                  />
-                </div>
+                <NotificationSettingsDialog
+                  serverCode={data.licenseKeyToken?.split('_')[0] || ''}
+                  serverName={data.hostname}
+                  hasNotification={notificationProps.hasNotification}
+                  currentSettings={notificationProps.currentSettings}
+                  permissionGranted={notificationProps.permissionGranted}
+                  onRequestPermission={notificationProps.onRequestPermission}
+                  onSave={notificationProps.onSave}
+                  onRemove={notificationProps.onRemove}
+                />
               )}
               {onToggleFavorite && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onToggleFavorite}
-                  className={`bg-background/70 backdrop-blur hover:bg-background h-9 w-9 ${isFavorite ? "text-yellow hover:text-yellow" : "text-muted-foreground hover:text-yellow"}`}
-                >
-                  <Star className={`w-4 h-4 ${isFavorite ? 'fill-yellow' : ''}`} />
+                <Button variant="ghost" size="icon" onClick={onToggleFavorite}
+                  className={`h-7 w-7 ${isFavorite ? "text-yellow hover:text-yellow" : "text-muted-foreground hover:text-yellow"}`}>
+                  <Star className={`w-3.5 h-3.5 ${isFavorite ? 'fill-yellow' : ''}`} />
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="bg-background/70 backdrop-blur hover:bg-background text-muted-foreground hover:text-foreground h-9 w-9"
-              >
-                <X className="w-4 h-4" />
+              <Button variant="ghost" size="icon" onClick={onClose}
+                className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                <X className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>
 
-          {/* Identity row, overlapping the banner */}
-          <div className="px-6 pb-6 -mt-12 sm:-mt-14 flex items-end gap-4 flex-wrap">
-            <div className="relative shrink-0">
-              <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-card bg-secondary flex items-center justify-center shadow-xl ${iconLoading && !iconUrl ? 'animate-pulse' : ''}`}>
-                {iconUrl && !iconError ? (
-                  <img src={iconUrl} alt="Server icon" className="w-full h-full object-cover" />
-                ) : (
-                  <Server className="w-10 h-10 text-muted-foreground" />
-                )}
-              </div>
+          {/* Identity row */}
+          <div className="px-5 pt-5 pb-4 flex items-start gap-4">
+            <div className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-border/50 bg-secondary/50 flex items-center justify-center ${iconLoading && !iconUrl ? 'animate-pulse' : ''}`}>
+              {iconUrl && !iconError ? (
+                <img src={iconUrl} alt="Server icon" className="w-full h-full object-cover" />
+              ) : (
+                <Server className="w-6 h-6 text-muted-foreground" />
+              )}
             </div>
 
-            <div className="min-w-0 flex-1 pt-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground break-words leading-tight">
-                  {stripColorCodes(data.hostname)}
-                </h2>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-xl md:text-2xl font-bold text-foreground break-words leading-tight tracking-tight">
+                {stripColorCodes(data.hostname)}
+              </h2>
+              {data.projectName && (
+                <p className="text-muted-foreground text-xs mt-1 truncate">{stripColorCodes(data.projectName)}</p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                {serverCode && (
+                  <button
+                    onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
+                    className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-background/40 border border-border/40 hover:border-[hsl(var(--green))]/40 transition-colors"
+                  >
+                    <span className="font-mono text-[10px] text-[hsl(var(--green))]/90">cfx.re/join/{serverCode}</span>
+                    <Copy className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
+                  </button>
+                )}
                 {detectedAntiCheats.length > 0 && detectedAntiCheats.map((ac) => (
                   <Tooltip key={ac.name}>
                     <TooltipTrigger asChild>
-                      <Badge className="text-xs font-semibold bg-[hsl(var(--green))]/15 text-[hsl(var(--green))] border border-[hsl(var(--green))]/30 gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[hsl(var(--green))]/10 text-[hsl(var(--green))] border border-[hsl(var(--green))]/25 text-[10px] font-semibold">
+                        <ShieldCheck className="w-3 h-3" />
                         {ac.name}
-                      </Badge>
+                      </span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>This server has <strong>{ac.name}</strong> protection enabled</p>
                     </TooltipContent>
                   </Tooltip>
                 ))}
-              </div>
-              {data.projectName && (
-                <p className="text-muted-foreground text-sm mt-1">{stripColorCodes(data.projectName)}</p>
-              )}
-
-              {/* Chip row: gametype, map, locale, build */}
-              <div className="flex flex-wrap items-center gap-1.5 mt-3">
                 {data.gametype && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary border border-border/40 text-xs text-foreground/90">
-                    <Server className="w-3 h-3" /> {data.gametype}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                    {data.gametype}
                   </span>
                 )}
                 {data.mapname && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary border border-border/40 text-xs text-foreground/90">
-                    <MapPin className="w-3 h-3" /> {data.mapname}
-                  </span>
-                )}
-                {data.locale && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary border border-border/40 text-xs text-foreground/90 uppercase">
-                    <Globe className="w-3 h-3" /> {data.locale}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                    <MapPin className="w-2.5 h-2.5" /> {data.mapname}
                   </span>
                 )}
                 {data.enforceGameBuild && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary border border-border/40 text-xs text-foreground/90">
-                    Build {data.enforceGameBuild}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] font-mono text-foreground/80">
+                    b{data.enforceGameBuild}
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary border border-border/40 text-xs text-foreground/90">
-                  <Users className="w-3 h-3" /> {effectivePlayerCount}/{data.maxPlayers}
-                </span>
               </div>
             </div>
-          </div>
 
-          {/* Action row */}
-          <div className="px-6 pb-6 flex flex-wrap items-center gap-3">
             {getConnectionString() && (
               <Button
                 onClick={() => copyToClipboard(getConnectionString()!, "Connect Command")}
-                className="bg-[hsl(var(--red))] hover:bg-[hsl(var(--red))]/90 text-white font-semibold px-6 rounded-full shadow-md"
+                className="hidden sm:inline-flex bg-[hsl(var(--green))] hover:bg-[hsl(var(--green))]/90 text-background font-semibold text-xs px-4 h-9 rounded-md shrink-0"
               >
                 Forbindelse
               </Button>
             )}
-            {data.ip && (
+          </div>
+
+          {/* Inline metric tiles */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-border/30 divide-x divide-border/30">
+            <div className="px-4 py-3">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Players</div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg font-bold text-foreground tabular-nums">{effectivePlayerCount}</span>
+                <span className="text-[10px] text-muted-foreground tabular-nums">/ {data.maxPlayers}</span>
+              </div>
+              <div className="mt-1.5 h-1 w-full bg-secondary/60 rounded-full overflow-hidden">
+                <div className="h-full bg-[hsl(var(--green))] rounded-full transition-all" style={{ width: `${Math.min(playerPercentage, 100)}%` }} />
+              </div>
+            </div>
+            <div className="px-4 py-3">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Capacity</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">
+                {playerPercentage.toFixed(1)}<span className="text-xs text-muted-foreground">%</span>
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">Filled</div>
+            </div>
+            <div className="px-4 py-3">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Avg Ping</div>
+              <div className={`text-lg font-bold tabular-nums ${avgPing === 0 ? 'text-muted-foreground' : avgPing < 80 ? 'text-[hsl(var(--green))]' : avgPing < 150 ? 'text-[hsl(var(--yellow))]' : 'text-[hsl(var(--red))]'}`}>
+                {avgPing || '—'}{avgPing > 0 && <span className="text-xs text-muted-foreground ml-0.5">ms</span>}
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">Network</div>
+            </div>
+            <div className="px-4 py-3">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Access</div>
+              <div className={`text-lg font-bold ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}>
+                {data.private ? 'Private' : 'Public'}
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">{data.locale?.toUpperCase() || 'EN'}</div>
+            </div>
+          </div>
+
+          {/* Secondary endpoint row */}
+          {data.ip && (
+            <div className="px-5 py-2.5 border-t border-border/30 bg-background/20 flex items-center gap-3 flex-wrap">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Endpoint</span>
               <button
                 onClick={() => copyToClipboard(`${data.ip}:${data.port}`, "IP Address")}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-secondary border border-border/40 text-sm hover:bg-secondary/80 transition-colors"
-                title="Copy IP"
+                className="inline-flex items-center gap-2 group"
               >
-                <SensitiveText type="ip" as="span" className="font-mono text-xs text-foreground/90">
+                <SensitiveText type="ip" as="span" className="font-mono text-xs text-foreground/90 group-hover:text-foreground">
                   {data.ip}:{data.port}
                 </SensitiveText>
-                <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+                <Copy className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
               </button>
-            )}
-            {lastUpdate && (
-              <span className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Clock className="w-3.5 h-3.5" />
-                Updated {formatDistanceToNow(lastUpdate, { addSuffix: true })}
-                {isPolling && <span className="text-primary animate-pulse">· refreshing</span>}
-              </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT: Details side panel — matches FiveM browser style */}
