@@ -538,101 +538,54 @@ const ServerDetails = ({
       )}
 
 
-      {/* Server Info Grid */}
-      <div className="glass-card p-6">
-        <div className="flex items-center gap-3 mb-5">
-          <Server className="w-5 h-5 text-primary" />
-          <h3 className="font-display text-lg font-semibold text-foreground">Server Information</h3>
+      {/* Server Info Grid — refined data manifest */}
+      <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border/30 bg-background/20">
+          <div className="flex items-center gap-2">
+            <Server className="w-3.5 h-3.5 text-[hsl(var(--green))]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">Server Manifest</h3>
+          </div>
+          <span className="text-[10px] font-mono text-muted-foreground">SVR · {(serverCode || 'unknown').toUpperCase()}</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Game Type</p>
-            <p className="text-sm font-medium text-foreground">{data.gametype || 'FiveM'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Map</p>
-            <p className="text-sm font-medium text-foreground">{data.mapname || 'Unknown'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Game Build</p>
-            <p className="text-sm font-medium text-foreground">{data.enforceGameBuild || 'Default'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">OneSync</p>
-            <p className={`text-sm font-medium ${data.onesyncEnabled ? 'text-[hsl(var(--green))]' : 'text-muted-foreground'}`}>
-              {data.onesyncEnabled ? 'Enabled' : 'Disabled'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Premium</p>
-            <p className="text-sm font-medium text-foreground capitalize">{data.premiumTier || 'None'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Locale</p>
-            <p className="text-sm font-medium text-foreground">{data.locale || 'en'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Server Version</p>
-            <p className="text-sm font-medium text-foreground truncate" title={data.server}>
-              {data.server ? data.server.split(' ')[0] : 'Unknown'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Script Hook</p>
-            <p className={`text-sm font-medium ${data.scriptHookAllowed ? 'text-[hsl(var(--orange))]' : 'text-[hsl(var(--green))]'}`}>
-              {data.scriptHookAllowed ? 'Allowed' : 'Blocked'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Pure Level</p>
-            <p className="text-sm font-medium text-foreground">{data.pureLevel || '0'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Access</p>
-            <p className={`text-sm font-medium ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}>
-              {data.private ? 'Private' : 'Public'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Enhanced Host</p>
-            <p className={`text-sm font-medium ${data.enhancedHostSupport ? 'text-[hsl(var(--green))]' : 'text-muted-foreground'}`}>
-              {data.enhancedHostSupport ? 'Yes' : 'No'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Support</p>
-            <p className="text-sm font-medium text-foreground capitalize">{data.supportStatus || 'Unknown'}</p>
-          </div>
-          {data.txAdmin && (
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">txAdmin</p>
-              <p className="text-sm font-medium text-foreground">{data.txAdmin}</p>
+        {(() => {
+          const rows: Array<{ label: string; value: React.ReactNode; mono?: boolean }> = [
+            { label: 'Game Type', value: data.gametype || 'FiveM' },
+            { label: 'Map', value: data.mapname || 'Unknown' },
+            { label: 'Game Build', value: data.enforceGameBuild || 'Default', mono: true },
+            { label: 'OneSync', value: <span className={data.onesyncEnabled ? 'text-[hsl(var(--green))]' : 'text-muted-foreground'}>{data.onesyncEnabled ? 'Enabled' : 'Disabled'}</span> },
+            { label: 'Premium', value: <span className="capitalize">{data.premiumTier || 'None'}</span> },
+            { label: 'Locale', value: (data.locale || 'en').toUpperCase(), mono: true },
+            { label: 'Server Version', value: data.server ? data.server.split(' ')[0] : 'Unknown', mono: true },
+            { label: 'Script Hook', value: <span className={data.scriptHookAllowed ? 'text-[hsl(var(--orange))]' : 'text-[hsl(var(--green))]'}>{data.scriptHookAllowed ? 'Allowed' : 'Blocked'}</span> },
+            { label: 'Pure Level', value: data.pureLevel || '0', mono: true },
+            { label: 'Access', value: <span className={data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}>{data.private ? 'Private' : 'Public'}</span> },
+            { label: 'Enhanced Host', value: <span className={data.enhancedHostSupport ? 'text-[hsl(var(--green))]' : 'text-muted-foreground'}>{data.enhancedHostSupport ? 'Yes' : 'No'}</span> },
+            { label: 'Support', value: <span className="capitalize">{data.supportStatus || 'Unknown'}</span> },
+          ];
+          if (data.txAdmin) rows.push({ label: 'txAdmin', value: data.txAdmin, mono: true });
+          if (data.upvotePower !== undefined && data.upvotePower > 0) rows.push({ label: 'Upvote Power', value: <span className="text-[hsl(var(--yellow))] font-mono">{data.upvotePower.toLocaleString()}</span> });
+          if (data.burstPower !== undefined && data.burstPower > 0) rows.push({ label: 'Burst Power', value: <span className="text-[hsl(var(--orange))] font-mono">{data.burstPower.toLocaleString()}</span> });
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 divide-border/20 sm:[&>*:nth-child(n)]:border-b sm:[&>*:nth-child(n)]:border-border/20 sm:[&>*]:border-r sm:[&>*:nth-child(3n)]:border-r-0 sm:[&>*]:border-border/20">
+              {rows.map((row, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 px-5 py-2.5 hover:bg-background/30 transition-colors">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{row.label}</span>
+                  <span className={`text-xs font-medium text-foreground text-right truncate ${row.mono ? 'font-mono' : ''}`}>{row.value}</span>
+                </div>
+              ))}
             </div>
-          )}
-          {(data.upvotePower !== undefined && data.upvotePower > 0) && (
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">Upvote Power</p>
-              <p className="text-sm font-medium text-[hsl(var(--yellow))]">{data.upvotePower.toLocaleString()}</p>
-            </div>
-          )}
-          {(data.burstPower !== undefined && data.burstPower > 0) && (
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">Burst Power</p>
-              <p className="text-sm font-medium text-[hsl(var(--orange))]">{data.burstPower.toLocaleString()}</p>
-            </div>
-          )}
-        </div>
+          );
+        })()}
 
-        {/* Discord link */}
         {data.discordGuildId && (
-          <div className="mt-4 pt-4 border-t border-border/50">
-            <a 
+          <div className="px-5 py-3 border-t border-border/30 bg-background/20">
+            <a
               href={`https://discord.gg/${data.discordGuildId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+              className="inline-flex items-center gap-2 text-xs text-[hsl(var(--green))] hover:underline font-medium"
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-3.5 h-3.5" />
               Join Discord Server <ExternalLink className="w-3 h-3" />
             </a>
           </div>
