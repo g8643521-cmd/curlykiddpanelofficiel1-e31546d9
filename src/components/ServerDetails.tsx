@@ -863,6 +863,9 @@ const ServerDetails = ({
         </div>
       </section>
 
+      {/* ============ RESOURCE METRICS ============ */}
+      <ResourceMetricsList resources={data.resources} />
+
       {/* Resource Categories */}
       <ResourceCategories resources={data.resources} />
 
