@@ -181,68 +181,92 @@ const PlayerRowCompact = ({
             } transition-colors`}
           >
             {/* Row */}
-            <div className="grid grid-cols-12 items-center gap-3 px-4 py-2.5">
+            <div
+              className="grid items-center gap-3 px-4 py-2.5 text-[11px]"
+              style={{
+                gridTemplateColumns: PLAYER_ROW_GRID,
+              }}
+            >
               {/* Index */}
-              <div className="col-span-1 text-[11px] font-mono text-muted-foreground tabular-nums">
+              <div className="font-mono text-muted-foreground tabular-nums">
                 {String(index + 1).padStart(2, "0")}
               </div>
 
-              {/* Name + avatar */}
-              <div className="col-span-5 flex items-center gap-2.5 min-w-0">
-                <div className="relative shrink-0">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt=""
-                      className="w-7 h-7 rounded-md object-cover border border-border/50"
-                      onError={() => setAvatarError(true)}
-                    />
-                  ) : (
-                    <div className="w-7 h-7 rounded-md bg-secondary/70 border border-border/50 flex items-center justify-center">
-                      <Users className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[hsl(var(--green))] ring-2 ring-card" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium text-foreground truncate">
-                      <Highlight text={player.name} query={searchQuery} />
-                    </span>
-                    {isCheater && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span
-                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                              cheaterReport!.status === "confirmed"
-                                ? "bg-[hsl(var(--red))]/15 text-[hsl(var(--red))]"
-                                : "bg-[hsl(var(--yellow))]/15 text-[hsl(var(--yellow))]"
-                            }`}
-                          >
-                            <AlertTriangle className="w-2.5 h-2.5" />
-                            {cheaterReport!.status === "confirmed" ? "Cheater" : "Suspect"}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>{cheaterReport!.reason}</TooltipContent>
-                      </Tooltip>
+              {/* Name + avatar (hover card trigger) */}
+              <PlayerHoverCard player={player}>
+                <div className="flex items-center gap-2.5 min-w-0 cursor-default">
+                  <div className="relative shrink-0">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                        className="w-7 h-7 rounded-md object-cover border border-border/50"
+                        onError={() => setAvatarError(true)}
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-md bg-secondary/70 border border-border/50 flex items-center justify-center">
+                        <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                      </div>
                     )}
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[hsl(var(--green))] ring-2 ring-card" />
                   </div>
-                  {hasIdentifiers && (
-                    <div className="text-[10px] text-muted-foreground/80">
-                      {Object.keys(identifiers).filter((k) => k !== "steamHex").length} identifier
-                      {Object.keys(identifiers).filter((k) => k !== "steamHex").length !== 1 ? "s" : ""}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-medium text-foreground truncate">
+                        <Highlight text={player.name} query={searchQuery} />
+                      </span>
+                      {isCheater && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                                cheaterReport!.status === "confirmed"
+                                  ? "bg-[hsl(var(--red))]/15 text-[hsl(var(--red))]"
+                                  : "bg-[hsl(var(--yellow))]/15 text-[hsl(var(--yellow))]"
+                              }`}
+                            >
+                              <AlertTriangle className="w-2.5 h-2.5" />
+                              {cheaterReport!.status === "confirmed" ? "Cheater" : "Suspect"}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>{cheaterReport!.reason}</TooltipContent>
+                        </Tooltip>
+                      )}
                     </div>
-                  )}
+                    <div className="text-[10px] font-mono text-muted-foreground/80">#{player.id}</div>
+                  </div>
                 </div>
+              </PlayerHoverCard>
+
+              {/* Character */}
+              <div className="truncate text-foreground/85">{placeholder.characterName}</div>
+
+              {/* Job */}
+              <div className="truncate">
+                <span className="inline-block px-1.5 py-0.5 rounded bg-secondary/60 border border-border/30 text-[10px] text-foreground/85">
+                  {placeholder.job}
+                </span>
               </div>
 
-              {/* ID */}
-              <div className="col-span-2 font-mono text-xs text-muted-foreground tabular-nums">
-                #{player.id}
+              {/* Session Time */}
+              <div className="font-mono tabular-nums text-foreground/80">{placeholder.sessionTime}</div>
+
+              {/* Total Playtime */}
+              <div className="font-mono tabular-nums text-foreground/80">{placeholder.totalPlaytime}</div>
+
+              {/* Last Seen */}
+              <div className="text-[10px] text-[hsl(var(--green))] uppercase tracking-wider truncate">
+                {placeholder.lastSeen}
+              </div>
+
+              {/* Country */}
+              <div className="truncate text-foreground/85">
+                <span className="mr-1">{placeholder.country.flag}</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{placeholder.country.code}</span>
               </div>
 
               {/* Ping */}
-              <div className="col-span-2 flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <div className="flex items-end gap-[2px] h-3" aria-hidden>
                   {[1, 2, 3, 4].map((b) => (
                     <div
@@ -255,16 +279,12 @@ const PlayerRowCompact = ({
                     />
                   ))}
                 </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-xs font-semibold tabular-nums" style={{ color: ping.color }}>
-                    {player.ping}
-                    <span className="text-[9px] text-muted-foreground ml-0.5">ms</span>
-                  </span>
-                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
-                    {ping.label}
-                  </span>
-                </div>
+                <span className="text-xs font-semibold tabular-nums" style={{ color: ping.color }}>
+                  {player.ping}
+                  <span className="text-[9px] text-muted-foreground ml-0.5">ms</span>
+                </span>
               </div>
+
 
               {/* Actions */}
               <div className="col-span-2 flex items-center justify-end gap-1">
