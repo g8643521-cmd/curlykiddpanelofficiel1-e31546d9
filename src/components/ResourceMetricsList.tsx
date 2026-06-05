@@ -133,7 +133,7 @@ const ResourceMetricsList = ({ resources }: Props) => {
                   {m.name}
                 </span>
                 <span className="col-span-4 md:col-span-2 inline-flex items-center gap-1.5">
-                  <tone.Icon className="w-3 h-3" style={{ color: tone.color }} />
+                  <span style={{ color: tone.color }}><tone.Icon className="w-3 h-3" /></span>
                   <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: tone.color }}>
                     {tone.label}
                   </span>

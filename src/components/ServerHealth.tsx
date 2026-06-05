@@ -101,7 +101,7 @@ const ServerHealth = ({ avgPing, currentPlayers, maxPlayers, resourceCount }: Pr
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 {c.label}
               </span>
-              <c.icon className="w-3.5 h-3.5" style={{ color: c.color }} />
+              <span style={{ color: c.color }}><c.icon className="w-3.5 h-3.5" /></span>
             </div>
             <div className="text-lg font-bold tabular-nums" style={{ color: c.color }}>
               {c.value}
