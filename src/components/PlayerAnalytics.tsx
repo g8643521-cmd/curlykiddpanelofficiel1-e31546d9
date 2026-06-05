@@ -104,7 +104,9 @@ const PlayerAnalytics = ({ players }: Props) => {
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 {c.label}
               </span>
-              <c.icon className="w-3.5 h-3.5" style={{ color: c.accent }} />
+              <span style={{ color: c.accent }}>
+                <c.icon className="w-3.5 h-3.5" />
+              </span>
             </div>
             <div
               className="text-lg font-bold tabular-nums text-foreground truncate"
