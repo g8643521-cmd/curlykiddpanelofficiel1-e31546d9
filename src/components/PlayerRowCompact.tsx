@@ -33,6 +33,8 @@ import {
 import { toast } from "sonner";
 import AddCheaterDialog from "./AddCheaterDialog";
 import PlayerNotesDialog from "./PlayerNotesDialog";
+import PlayerHoverCard from "./PlayerHoverCard";
+import { getPlayerPlaceholder } from "@/lib/playerPlaceholder";
 import SensitiveText from "./SensitiveText";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useStreamerMode } from "@/hooks/useStreamerMode";
