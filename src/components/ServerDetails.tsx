@@ -747,46 +747,71 @@ const ServerDetails = ({
               </div>
             </div>
 
-            {/* Column header */}
-            <div className="grid grid-cols-12 gap-3 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-background/30 border-b border-border/30">
-              <span className="col-span-1">#</span>
-              <span className="col-span-5">Player</span>
-              <span className="col-span-2">Server ID</span>
-              <span className="col-span-2">Connection</span>
-              <span className="col-span-2 text-right">Actions</span>
-            </div>
-
-            {/* Rows */}
-            <div className="max-h-[640px] overflow-y-auto divide-y divide-border/20">
-              {sortedPlayers.length > 0 ? (
-                sortedPlayers.map((player, index) => (
-                  <PlayerRowCompact
-                    key={`${player.id}-${player.name}`}
-                    player={player}
-                    index={index}
-                    searchQuery={playerSearch}
-                    cheaterReport={isCheater(player)}
-                    serverCode={serverCode || undefined}
-                    serverName={serverNameClean}
-                    onCheaterAdded={fetchCheaters}
-                  />
-                ))
-              ) : (
-                <div className="py-12 text-center">
-                  <Users className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">
-                    {effectivePlayerCount > 0
-                      ? playerSearch
-                        ? `No players match "${playerSearch}"`
-                        : "Player list not available for this server"
-                      : "No players online"}
-                  </p>
+            {/* Horizontally scrollable player table */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[1100px]">
+                {/* Column header */}
+                <div
+                  className="grid gap-3 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-background/30 border-b border-border/30"
+                  style={{ gridTemplateColumns: PLAYER_ROW_GRID }}
+                >
+                  <span>#</span>
+                  <span>Player</span>
+                  <span>Character</span>
+                  <span>Job</span>
+                  <span>Session</span>
+                  <span>Playtime</span>
+                  <span>Last Seen</span>
+                  <span>Country</span>
+                  <span>Ping</span>
+                  <span className="text-right">Actions</span>
                 </div>
-              )}
+
+                {/* Rows */}
+                <div className="max-h-[640px] overflow-y-auto divide-y divide-border/20">
+                  {sortedPlayers.length > 0 ? (
+                    sortedPlayers.map((player, index) => (
+                      <PlayerRowCompact
+                        key={`${player.id}-${player.name}`}
+                        player={player}
+                        index={index}
+                        searchQuery={playerSearch}
+                        cheaterReport={isCheater(player)}
+                        serverCode={serverCode || undefined}
+                        serverName={serverNameClean}
+                        onCheaterAdded={fetchCheaters}
+                      />
+                    ))
+                  ) : (
+                    <div className="py-12 text-center">
+                      <Users className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {effectivePlayerCount > 0
+                          ? playerSearch
+                            ? `No players match "${playerSearch}"`
+                            : "Player list not available for this server"
+                          : "No players online"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
         );
       })()}
+
+      {/* ============ PLAYER ANALYTICS ============ */}
+      <PlayerAnalytics players={data.players} />
+
+      {/* ============ SERVER HEALTH ============ */}
+      <ServerHealth
+        avgPing={avgPing}
+        currentPlayers={effectivePlayerCount}
+        maxPlayers={data.maxPlayers}
+        resourceCount={data.resources.length}
+      />
+
 
       {/* ============ SERVER RESOURCES ============ */}
       <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
