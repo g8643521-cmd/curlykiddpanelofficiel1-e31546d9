@@ -31,12 +31,15 @@ import { toast } from "sonner";
 import { ServerData } from "@/hooks/useCfxApi";
 import NotificationSettingsDialog from "@/components/NotificationSettingsDialog";
 
-import PlayerRowCompact from "@/components/PlayerRowCompact";
+import PlayerRowCompact, { PLAYER_ROW_GRID } from "@/components/PlayerRowCompact";
 import CheaterWarningBanner from "@/components/CheaterWarningBanner";
 import SensitiveText from "@/components/SensitiveText";
 import ResourceCategories from "@/components/ResourceCategories";
 import ServerOwnerCard from "@/components/ServerOwnerCard";
 import ResourceInspector from "@/components/ResourceInspector";
+import PlayerAnalytics from "@/components/PlayerAnalytics";
+import ServerHealth from "@/components/ServerHealth";
+import ResourceMetricsList from "@/components/ResourceMetricsList";
 
 
 import { useAdminStatus } from "@/hooks/useAdminStatus";
