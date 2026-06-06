@@ -34,14 +34,13 @@ import { toast } from "sonner";
 import AddCheaterDialog from "./AddCheaterDialog";
 import PlayerNotesDialog from "./PlayerNotesDialog";
 import PlayerHoverCard from "./PlayerHoverCard";
-import { getPlayerPlaceholder } from "@/lib/playerPlaceholder";
 import SensitiveText from "./SensitiveText";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useStreamerMode } from "@/hooks/useStreamerMode";
 
 // Shared grid template — used by row + header in ServerDetails to stay aligned.
 export const PLAYER_ROW_GRID =
-  "44px minmax(200px,2fr) minmax(120px,1.2fr) minmax(110px,1fr) minmax(90px,0.9fr) minmax(110px,1fr) minmax(110px,1fr) minmax(80px,0.8fr) minmax(110px,1fr) 76px";
+  "44px minmax(220px,2fr) minmax(140px,1.2fr) minmax(140px,1.2fr) minmax(140px,1.2fr) minmax(110px,1fr) 76px";
 
 
 interface PlayerIdentifiers {
