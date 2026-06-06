@@ -319,6 +319,7 @@ const ServerDetails = ({
                     onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
                     className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-background/40 border border-border/40 hover:border-[hsl(var(--green))]/40 transition-colors"
                   >
+                    <Link2 className="w-2.5 h-2.5 text-[hsl(var(--green))]/80" />
                     <span className="font-mono text-[10px] text-[hsl(var(--green))]/90">cfx.re/join/{serverCode}</span>
                     <Copy className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
                   </button>
@@ -337,20 +338,80 @@ const ServerDetails = ({
                   </Tooltip>
                 ))}
                 {data.gametype && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
-                    {data.gametype}
-                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                        <Layers className="w-2.5 h-2.5 text-muted-foreground" />
+                        {data.gametype}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Game type</TooltipContent>
+                  </Tooltip>
                 )}
                 {data.mapname && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
-                    <MapPin className="w-2.5 h-2.5" /> {data.mapname}
-                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                        <MapPin className="w-2.5 h-2.5" /> {data.mapname}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Active map</TooltipContent>
+                  </Tooltip>
                 )}
                 {data.enforceGameBuild && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] font-mono text-foreground/80">
-                    b{data.enforceGameBuild}
-                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] font-mono text-foreground/80">
+                        b{data.enforceGameBuild}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Enforced game build</TooltipContent>
+                  </Tooltip>
                 )}
+                {data.resources.length > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                        <Download className="w-2.5 h-2.5 text-muted-foreground" />
+                        <span className="tabular-nums">{data.resources.length}</span>
+                        <span className="text-muted-foreground">resources</span>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Loaded server resources</TooltipContent>
+                  </Tooltip>
+                )}
+                {tagCount > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                        <Tag className="w-2.5 h-2.5 text-muted-foreground" />
+                        <span className="tabular-nums">{tagCount}</span>
+                        <span className="text-muted-foreground">tags</span>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Server tags</TooltipContent>
+                  </Tooltip>
+                )}
+                {data.locale && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] font-mono text-foreground/80">
+                        <Languages className="w-2.5 h-2.5 text-muted-foreground" />
+                        {data.locale.toUpperCase()}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Server locale</TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${data.private ? 'bg-[hsl(var(--red))]/10 text-[hsl(var(--red))] border-[hsl(var(--red))]/25' : 'bg-[hsl(var(--green))]/10 text-[hsl(var(--green))] border-[hsl(var(--green))]/25'}`}>
+                      {data.private ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5" />}
+                      {data.private ? 'Private' : 'Public'}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{data.private ? 'Connection requires whitelist / private key' : 'Open to public connections'}</TooltipContent>
+                </Tooltip>
               </div>
             </div>
 
