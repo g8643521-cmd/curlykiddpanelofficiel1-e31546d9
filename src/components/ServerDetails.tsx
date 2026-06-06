@@ -798,16 +798,7 @@ const ServerDetails = ({
         );
       })()}
 
-      {/* ============ PLAYER ANALYTICS ============ */}
-      <PlayerAnalytics players={data.players} />
 
-      {/* ============ SERVER HEALTH ============ */}
-      <ServerHealth
-        avgPing={avgPing}
-        currentPlayers={effectivePlayerCount}
-        maxPlayers={data.maxPlayers}
-        resourceCount={data.resources.length}
-      />
 
 
       {/* ============ SERVER RESOURCES ============ */}
