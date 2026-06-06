@@ -163,9 +163,46 @@ const ServerDetails = ({
   const effectivePlayerCount = data.players.length > 0 ? data.players.length : (data.playerCount ?? 0);
 
   const playerPercentage = data.maxPlayers > 0 ? (effectivePlayerCount / data.maxPlayers) * 100 : 0;
+  const freeSlots = Math.max(0, (data.maxPlayers || 0) - effectivePlayerCount);
   const avgPing = data.players.length > 0
     ? Math.round(data.players.reduce((sum, p) => sum + p.ping, 0) / data.players.length)
     : 0;
+  const pingMin = data.players.length > 0 ? Math.min(...data.players.map((p) => p.ping)) : 0;
+  const pingMax = data.players.length > 0 ? Math.max(...data.players.map((p) => p.ping)) : 0;
+  const pingBuckets = data.players.reduce(
+    (acc, p) => {
+      if (p.ping <= 50) acc.excellent++;
+      else if (p.ping <= 100) acc.good++;
+      else if (p.ping <= 150) acc.moderate++;
+      else acc.poor++;
+      return acc;
+    },
+    { excellent: 0, good: 0, moderate: 0, poor: 0 },
+  );
+  const pingMaxBucket = Math.max(pingBuckets.excellent, pingBuckets.good, pingBuckets.moderate, pingBuckets.poor, 1);
+
+  const capacityStatus = !data.maxPlayers
+    ? { label: "Unknown", color: "hsl(var(--muted-foreground))" }
+    : playerPercentage >= 95
+      ? { label: "Full", color: "hsl(var(--red))" }
+      : playerPercentage >= 75
+        ? { label: "Busy", color: "hsl(var(--orange))" }
+        : playerPercentage >= 35
+          ? { label: "Healthy", color: "hsl(var(--green))" }
+          : playerPercentage > 0
+            ? { label: "Light", color: "hsl(var(--green))" }
+            : { label: "Empty", color: "hsl(var(--muted-foreground))" };
+
+  const pingTone =
+    avgPing === 0
+      ? "hsl(var(--muted-foreground))"
+      : avgPing < 80
+        ? "hsl(var(--green))"
+        : avgPing < 150
+          ? "hsl(var(--yellow))"
+          : "hsl(var(--red))";
+  const pingLabel =
+    avgPing === 0 ? "No data" : avgPing < 80 ? "Excellent" : avgPing < 150 ? "Moderate" : "Poor";
 
   const copyToClipboard = (text: string, label: string) => {
     if (streamerMode) {
@@ -183,6 +220,7 @@ const ServerDetails = ({
   const parseTags = (tags: string) => {
     return tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
   };
+  const tagCount = data.tags ? parseTags(data.tags).length : 0;
 
   const getConnectionString = () => {
     if (data.ip && data.port) {
