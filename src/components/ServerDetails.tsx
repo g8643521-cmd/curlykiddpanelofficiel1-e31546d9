@@ -37,9 +37,6 @@ import SensitiveText from "@/components/SensitiveText";
 import ResourceCategories from "@/components/ResourceCategories";
 import ServerOwnerCard from "@/components/ServerOwnerCard";
 import ResourceInspector from "@/components/ResourceInspector";
-import PlayerAnalytics from "@/components/PlayerAnalytics";
-import ServerHealth from "@/components/ServerHealth";
-import ResourceMetricsList from "@/components/ResourceMetricsList";
 
 
 import { useAdminStatus } from "@/hooks/useAdminStatus";
