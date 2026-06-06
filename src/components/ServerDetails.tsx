@@ -426,38 +426,185 @@ const ServerDetails = ({
           </div>
 
           {/* Inline metric tiles */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-border/30 divide-x divide-border/30">
-            <div className="px-4 py-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Players</div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-bold text-foreground tabular-nums">{effectivePlayerCount}</span>
-                <span className="text-[10px] text-muted-foreground tabular-nums">/ {data.maxPlayers}</span>
-              </div>
-              <div className="mt-1.5 h-1 w-full bg-secondary/60 rounded-full overflow-hidden">
-                <div className="h-full bg-[hsl(var(--green))] rounded-full transition-all" style={{ width: `${Math.min(playerPercentage, 100)}%` }} />
-              </div>
-            </div>
-            <div className="px-4 py-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Capacity</div>
-              <div className="text-lg font-bold text-foreground tabular-nums">
-                {playerPercentage.toFixed(1)}<span className="text-xs text-muted-foreground">%</span>
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">Filled</div>
-            </div>
-            <div className="px-4 py-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Avg Ping</div>
-              <div className={`text-lg font-bold tabular-nums ${avgPing === 0 ? 'text-muted-foreground' : avgPing < 80 ? 'text-[hsl(var(--green))]' : avgPing < 150 ? 'text-[hsl(var(--yellow))]' : 'text-[hsl(var(--red))]'}`}>
-                {avgPing || '—'}{avgPing > 0 && <span className="text-xs text-muted-foreground ml-0.5">ms</span>}
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">Network</div>
-            </div>
-            <div className="px-4 py-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Access</div>
-              <div className={`text-lg font-bold ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}>
-                {data.private ? 'Private' : 'Public'}
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">{data.locale?.toUpperCase() || 'EN'}</div>
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-border/30 divide-x divide-y sm:divide-y-0 divide-border/30">
+            {/* Players */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-3 hover:bg-background/30 transition-colors cursor-default">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Players</span>
+                    <Users className="w-3 h-3 text-[hsl(var(--green))]" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-bold text-foreground tabular-nums leading-none">{effectivePlayerCount}</span>
+                    <span className="text-[10px] text-muted-foreground tabular-nums">/ {data.maxPlayers || "—"}</span>
+                  </div>
+                  <div className="mt-1.5 h-1 w-full bg-secondary/60 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${Math.min(playerPercentage, 100)}%`, background: capacityStatus.color }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[10px] tabular-nums">
+                    <span className="text-muted-foreground">{freeSlots} free</span>
+                    {data.players.length === 0 && effectivePlayerCount > 0 ? (
+                      <span className="text-[hsl(var(--yellow))] inline-flex items-center gap-0.5">
+                        <EyeOff className="w-2.5 h-2.5" /> hidden
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">live</span>
+                    )}
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {effectivePlayerCount} players online · {freeSlots} free slots
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Capacity */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-3 hover:bg-background/30 transition-colors cursor-default">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Capacity</span>
+                    <Gauge className="w-3 h-3" style={{ color: capacityStatus.color }} />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-bold text-foreground tabular-nums leading-none">
+                      {playerPercentage.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">%</span>
+                  </div>
+                  {/* Segmented capacity bar (10 segments) */}
+                  <div className="mt-1.5 flex gap-[2px] h-1">
+                    {Array.from({ length: 10 }).map((_, i) => {
+                      const filled = playerPercentage >= (i + 1) * 10;
+                      const partial =
+                        !filled && playerPercentage > i * 10 && playerPercentage < (i + 1) * 10;
+                      return (
+                        <div
+                          key={i}
+                          className="flex-1 rounded-[1px]"
+                          style={{
+                            background: filled
+                              ? capacityStatus.color
+                              : partial
+                                ? `color-mix(in oklab, ${capacityStatus.color} 50%, transparent)`
+                                : "hsl(var(--muted-foreground) / 0.2)",
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[10px]">
+                    <span
+                      className="font-semibold uppercase tracking-wider"
+                      style={{ color: capacityStatus.color }}
+                    >
+                      {capacityStatus.label}
+                    </span>
+                    <span className="text-muted-foreground tabular-nums">
+                      {data.maxPlayers > 0 ? `${data.maxPlayers - effectivePlayerCount} left` : "—"}
+                    </span>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {playerPercentage.toFixed(1)}% filled · {capacityStatus.label.toLowerCase()} load
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Avg Ping w/ distribution sparkline */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-3 hover:bg-background/30 transition-colors cursor-default">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Avg Ping</span>
+                    <Activity className="w-3 h-3" style={{ color: pingTone }} />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-bold tabular-nums leading-none" style={{ color: pingTone }}>
+                      {avgPing || "—"}
+                    </span>
+                    {avgPing > 0 && <span className="text-xs text-muted-foreground">ms</span>}
+                  </div>
+                  {/* Sparkline: 4 ping buckets */}
+                  <div className="mt-1.5 flex items-end gap-[2px] h-4" aria-hidden>
+                    {[
+                      { v: pingBuckets.excellent, c: "hsl(var(--green))" },
+                      { v: pingBuckets.good, c: "hsl(var(--green))" },
+                      { v: pingBuckets.moderate, c: "hsl(var(--yellow))" },
+                      { v: pingBuckets.poor, c: "hsl(var(--red))" },
+                    ].map((b, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-[1px] transition-all"
+                        style={{
+                          height: `${Math.max(b.v > 0 ? 18 : 6, (b.v / pingMaxBucket) * 100)}%`,
+                          background:
+                            b.v > 0 ? b.c : "hsl(var(--muted-foreground) / 0.2)",
+                          opacity: b.v > 0 ? 1 : 0.5,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[10px] tabular-nums">
+                    <span className="text-muted-foreground">
+                      {data.players.length > 0 ? `${pingMin}–${pingMax}ms` : "no samples"}
+                    </span>
+                    <span className="font-semibold uppercase tracking-wider" style={{ color: pingTone }}>
+                      {pingLabel}
+                    </span>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                Distribution: ≤50ms {pingBuckets.excellent} · ≤100ms {pingBuckets.good} · ≤150ms {pingBuckets.moderate} · &gt;150ms {pingBuckets.poor}
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Access */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-3 hover:bg-background/30 transition-colors cursor-default">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Access</span>
+                    {data.private ? (
+                      <Lock className="w-3 h-3 text-[hsl(var(--red))]" />
+                    ) : (
+                      <Unlock className="w-3 h-3 text-[hsl(var(--green))]" />
+                    )}
+                  </div>
+                  <div
+                    className={`text-lg font-bold leading-none ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}
+                  >
+                    {data.private ? 'Private' : 'Public'}
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-1 flex-wrap">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider bg-secondary/60 border border-border/30 text-foreground/75">
+                      <Languages className="w-2.5 h-2.5" /> {data.locale?.toUpperCase() || 'EN'}
+                    </span>
+                    {detectedAntiCheats.length > 0 && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[hsl(var(--green))]/10 border border-[hsl(var(--green))]/25 text-[hsl(var(--green))]">
+                        <ShieldCheck className="w-2.5 h-2.5" /> AC×{detectedAntiCheats.length}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[10px]">
+                    <span className="text-muted-foreground">
+                      {data.onesyncEnabled ? 'OneSync on' : 'OneSync off'}
+                    </span>
+                    <span className="text-muted-foreground font-mono">
+                      {data.enforceGameBuild ? `b${data.enforceGameBuild}` : '—'}
+                    </span>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {data.private ? 'Whitelist required to join' : 'Open to public connections'}
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Secondary endpoint row */}
