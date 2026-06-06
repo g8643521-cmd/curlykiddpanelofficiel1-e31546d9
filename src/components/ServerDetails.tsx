@@ -22,6 +22,15 @@ import {
   Info,
   ShieldCheck,
   Eye,
+  Lock,
+  Unlock,
+  Activity,
+  Gauge,
+  Signal,
+  Languages,
+  Layers,
+  Building2,
+  Link2,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -154,9 +163,46 @@ const ServerDetails = ({
   const effectivePlayerCount = data.players.length > 0 ? data.players.length : (data.playerCount ?? 0);
 
   const playerPercentage = data.maxPlayers > 0 ? (effectivePlayerCount / data.maxPlayers) * 100 : 0;
+  const freeSlots = Math.max(0, (data.maxPlayers || 0) - effectivePlayerCount);
   const avgPing = data.players.length > 0
     ? Math.round(data.players.reduce((sum, p) => sum + p.ping, 0) / data.players.length)
     : 0;
+  const pingMin = data.players.length > 0 ? Math.min(...data.players.map((p) => p.ping)) : 0;
+  const pingMax = data.players.length > 0 ? Math.max(...data.players.map((p) => p.ping)) : 0;
+  const pingBuckets = data.players.reduce(
+    (acc, p) => {
+      if (p.ping <= 50) acc.excellent++;
+      else if (p.ping <= 100) acc.good++;
+      else if (p.ping <= 150) acc.moderate++;
+      else acc.poor++;
+      return acc;
+    },
+    { excellent: 0, good: 0, moderate: 0, poor: 0 },
+  );
+  const pingMaxBucket = Math.max(pingBuckets.excellent, pingBuckets.good, pingBuckets.moderate, pingBuckets.poor, 1);
+
+  const capacityStatus = !data.maxPlayers
+    ? { label: "Unknown", color: "hsl(var(--muted-foreground))" }
+    : playerPercentage >= 95
+      ? { label: "Full", color: "hsl(var(--red))" }
+      : playerPercentage >= 75
+        ? { label: "Busy", color: "hsl(var(--orange))" }
+        : playerPercentage >= 35
+          ? { label: "Healthy", color: "hsl(var(--green))" }
+          : playerPercentage > 0
+            ? { label: "Light", color: "hsl(var(--green))" }
+            : { label: "Empty", color: "hsl(var(--muted-foreground))" };
+
+  const pingTone =
+    avgPing === 0
+      ? "hsl(var(--muted-foreground))"
+      : avgPing < 80
+        ? "hsl(var(--green))"
+        : avgPing < 150
+          ? "hsl(var(--yellow))"
+          : "hsl(var(--red))";
+  const pingLabel =
+    avgPing === 0 ? "No data" : avgPing < 80 ? "Excellent" : avgPing < 150 ? "Moderate" : "Poor";
 
   const copyToClipboard = (text: string, label: string) => {
     if (streamerMode) {
@@ -174,6 +220,7 @@ const ServerDetails = ({
   const parseTags = (tags: string) => {
     return tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
   };
+  const tagCount = data.tags ? parseTags(data.tags).length : 0;
 
   const getConnectionString = () => {
     if (data.ip && data.port) {
@@ -272,6 +319,7 @@ const ServerDetails = ({
                     onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
                     className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-background/40 border border-border/40 hover:border-[hsl(var(--green))]/40 transition-colors"
                   >
+                    <Link2 className="w-2.5 h-2.5 text-[hsl(var(--green))]/80" />
                     <span className="font-mono text-[10px] text-[hsl(var(--green))]/90">cfx.re/join/{serverCode}</span>
                     <Copy className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
                   </button>
@@ -290,20 +338,80 @@ const ServerDetails = ({
                   </Tooltip>
                 ))}
                 {data.gametype && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
-                    {data.gametype}
-                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                        <Layers className="w-2.5 h-2.5 text-muted-foreground" />
+                        {data.gametype}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Game type</TooltipContent>
+                  </Tooltip>
                 )}
                 {data.mapname && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
-                    <MapPin className="w-2.5 h-2.5" /> {data.mapname}
-                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                        <MapPin className="w-2.5 h-2.5" /> {data.mapname}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Active map</TooltipContent>
+                  </Tooltip>
                 )}
                 {data.enforceGameBuild && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] font-mono text-foreground/80">
-                    b{data.enforceGameBuild}
-                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] font-mono text-foreground/80">
+                        b{data.enforceGameBuild}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Enforced game build</TooltipContent>
+                  </Tooltip>
                 )}
+                {data.resources.length > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                        <Download className="w-2.5 h-2.5 text-muted-foreground" />
+                        <span className="tabular-nums">{data.resources.length}</span>
+                        <span className="text-muted-foreground">resources</span>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Loaded server resources</TooltipContent>
+                  </Tooltip>
+                )}
+                {tagCount > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-foreground/80">
+                        <Tag className="w-2.5 h-2.5 text-muted-foreground" />
+                        <span className="tabular-nums">{tagCount}</span>
+                        <span className="text-muted-foreground">tags</span>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Server tags</TooltipContent>
+                  </Tooltip>
+                )}
+                {data.locale && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] font-mono text-foreground/80">
+                        <Languages className="w-2.5 h-2.5 text-muted-foreground" />
+                        {data.locale.toUpperCase()}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Server locale</TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${data.private ? 'bg-[hsl(var(--red))]/10 text-[hsl(var(--red))] border-[hsl(var(--red))]/25' : 'bg-[hsl(var(--green))]/10 text-[hsl(var(--green))] border-[hsl(var(--green))]/25'}`}>
+                      {data.private ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5" />}
+                      {data.private ? 'Private' : 'Public'}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{data.private ? 'Connection requires whitelist / private key' : 'Open to public connections'}</TooltipContent>
+                </Tooltip>
               </div>
             </div>
 
@@ -318,38 +426,185 @@ const ServerDetails = ({
           </div>
 
           {/* Inline metric tiles */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-border/30 divide-x divide-border/30">
-            <div className="px-4 py-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Players</div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-bold text-foreground tabular-nums">{effectivePlayerCount}</span>
-                <span className="text-[10px] text-muted-foreground tabular-nums">/ {data.maxPlayers}</span>
-              </div>
-              <div className="mt-1.5 h-1 w-full bg-secondary/60 rounded-full overflow-hidden">
-                <div className="h-full bg-[hsl(var(--green))] rounded-full transition-all" style={{ width: `${Math.min(playerPercentage, 100)}%` }} />
-              </div>
-            </div>
-            <div className="px-4 py-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Capacity</div>
-              <div className="text-lg font-bold text-foreground tabular-nums">
-                {playerPercentage.toFixed(1)}<span className="text-xs text-muted-foreground">%</span>
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">Filled</div>
-            </div>
-            <div className="px-4 py-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Avg Ping</div>
-              <div className={`text-lg font-bold tabular-nums ${avgPing === 0 ? 'text-muted-foreground' : avgPing < 80 ? 'text-[hsl(var(--green))]' : avgPing < 150 ? 'text-[hsl(var(--yellow))]' : 'text-[hsl(var(--red))]'}`}>
-                {avgPing || '—'}{avgPing > 0 && <span className="text-xs text-muted-foreground ml-0.5">ms</span>}
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">Network</div>
-            </div>
-            <div className="px-4 py-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Access</div>
-              <div className={`text-lg font-bold ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}>
-                {data.private ? 'Private' : 'Public'}
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">{data.locale?.toUpperCase() || 'EN'}</div>
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-border/30 divide-x divide-y sm:divide-y-0 divide-border/30">
+            {/* Players */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-3 hover:bg-background/30 transition-colors cursor-default">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Players</span>
+                    <Users className="w-3 h-3 text-[hsl(var(--green))]" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-bold text-foreground tabular-nums leading-none">{effectivePlayerCount}</span>
+                    <span className="text-[10px] text-muted-foreground tabular-nums">/ {data.maxPlayers || "—"}</span>
+                  </div>
+                  <div className="mt-1.5 h-1 w-full bg-secondary/60 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${Math.min(playerPercentage, 100)}%`, background: capacityStatus.color }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[10px] tabular-nums">
+                    <span className="text-muted-foreground">{freeSlots} free</span>
+                    {data.players.length === 0 && effectivePlayerCount > 0 ? (
+                      <span className="text-[hsl(var(--yellow))] inline-flex items-center gap-0.5">
+                        <EyeOff className="w-2.5 h-2.5" /> hidden
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">live</span>
+                    )}
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {effectivePlayerCount} players online · {freeSlots} free slots
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Capacity */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-3 hover:bg-background/30 transition-colors cursor-default">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Capacity</span>
+                    <Gauge className="w-3 h-3" style={{ color: capacityStatus.color }} />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-bold text-foreground tabular-nums leading-none">
+                      {playerPercentage.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">%</span>
+                  </div>
+                  {/* Segmented capacity bar (10 segments) */}
+                  <div className="mt-1.5 flex gap-[2px] h-1">
+                    {Array.from({ length: 10 }).map((_, i) => {
+                      const filled = playerPercentage >= (i + 1) * 10;
+                      const partial =
+                        !filled && playerPercentage > i * 10 && playerPercentage < (i + 1) * 10;
+                      return (
+                        <div
+                          key={i}
+                          className="flex-1 rounded-[1px]"
+                          style={{
+                            background: filled
+                              ? capacityStatus.color
+                              : partial
+                                ? `color-mix(in oklab, ${capacityStatus.color} 50%, transparent)`
+                                : "hsl(var(--muted-foreground) / 0.2)",
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[10px]">
+                    <span
+                      className="font-semibold uppercase tracking-wider"
+                      style={{ color: capacityStatus.color }}
+                    >
+                      {capacityStatus.label}
+                    </span>
+                    <span className="text-muted-foreground tabular-nums">
+                      {data.maxPlayers > 0 ? `${data.maxPlayers - effectivePlayerCount} left` : "—"}
+                    </span>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {playerPercentage.toFixed(1)}% filled · {capacityStatus.label.toLowerCase()} load
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Avg Ping w/ distribution sparkline */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-3 hover:bg-background/30 transition-colors cursor-default">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Avg Ping</span>
+                    <Activity className="w-3 h-3" style={{ color: pingTone }} />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-bold tabular-nums leading-none" style={{ color: pingTone }}>
+                      {avgPing || "—"}
+                    </span>
+                    {avgPing > 0 && <span className="text-xs text-muted-foreground">ms</span>}
+                  </div>
+                  {/* Sparkline: 4 ping buckets */}
+                  <div className="mt-1.5 flex items-end gap-[2px] h-4" aria-hidden>
+                    {[
+                      { v: pingBuckets.excellent, c: "hsl(var(--green))" },
+                      { v: pingBuckets.good, c: "hsl(var(--green))" },
+                      { v: pingBuckets.moderate, c: "hsl(var(--yellow))" },
+                      { v: pingBuckets.poor, c: "hsl(var(--red))" },
+                    ].map((b, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-[1px] transition-all"
+                        style={{
+                          height: `${Math.max(b.v > 0 ? 18 : 6, (b.v / pingMaxBucket) * 100)}%`,
+                          background:
+                            b.v > 0 ? b.c : "hsl(var(--muted-foreground) / 0.2)",
+                          opacity: b.v > 0 ? 1 : 0.5,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[10px] tabular-nums">
+                    <span className="text-muted-foreground">
+                      {data.players.length > 0 ? `${pingMin}–${pingMax}ms` : "no samples"}
+                    </span>
+                    <span className="font-semibold uppercase tracking-wider" style={{ color: pingTone }}>
+                      {pingLabel}
+                    </span>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                Distribution: ≤50ms {pingBuckets.excellent} · ≤100ms {pingBuckets.good} · ≤150ms {pingBuckets.moderate} · &gt;150ms {pingBuckets.poor}
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Access */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-3 hover:bg-background/30 transition-colors cursor-default">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Access</span>
+                    {data.private ? (
+                      <Lock className="w-3 h-3 text-[hsl(var(--red))]" />
+                    ) : (
+                      <Unlock className="w-3 h-3 text-[hsl(var(--green))]" />
+                    )}
+                  </div>
+                  <div
+                    className={`text-lg font-bold leading-none ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}
+                  >
+                    {data.private ? 'Private' : 'Public'}
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-1 flex-wrap">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider bg-secondary/60 border border-border/30 text-foreground/75">
+                      <Languages className="w-2.5 h-2.5" /> {data.locale?.toUpperCase() || 'EN'}
+                    </span>
+                    {detectedAntiCheats.length > 0 && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[hsl(var(--green))]/10 border border-[hsl(var(--green))]/25 text-[hsl(var(--green))]">
+                        <ShieldCheck className="w-2.5 h-2.5" /> AC×{detectedAntiCheats.length}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[10px]">
+                    <span className="text-muted-foreground">
+                      {data.onesyncEnabled ? 'OneSync on' : 'OneSync off'}
+                    </span>
+                    <span className="text-muted-foreground font-mono">
+                      {data.enforceGameBuild ? `b${data.enforceGameBuild}` : '—'}
+                    </span>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {data.private ? 'Whitelist required to join' : 'Open to public connections'}
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Secondary endpoint row */}
@@ -377,77 +632,130 @@ const ServerDetails = ({
               <Eye className="w-4 h-4 text-muted-foreground" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Details</h3>
             </div>
-            <div className="space-y-2.5 text-sm">
+            <div className="text-sm">
               {/* cfx chip + project chip row */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 mb-3">
                 {serverCode && (
-                  <button
-                    onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
-                  >
-                    <span className="font-mono text-xs text-foreground/90">cfx.re/join/{serverCode}</span>
-                    <Copy className="w-3 h-3 text-muted-foreground" />
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
+                      >
+                        <Link2 className="w-3 h-3 text-[hsl(var(--green))]/80" />
+                        <span className="font-mono text-xs text-foreground/90">cfx.re/join/{serverCode}</span>
+                        <Copy className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy CFX join URL</TooltipContent>
+                  </Tooltip>
                 )}
                 {data.projectName && (
-                  <button
-                    onClick={() => copyToClipboard(stripColorCodes(data.projectName!), "Project name")}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
-                  >
-                    <span className="text-xs text-foreground/90 truncate max-w-[140px]">{stripColorCodes(data.projectName)}</span>
-                    <Copy className="w-3 h-3 text-muted-foreground" />
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => copyToClipboard(stripColorCodes(data.projectName!), "Project name")}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
+                      >
+                        <Layers className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-xs text-foreground/90 truncate max-w-[140px]">{stripColorCodes(data.projectName)}</span>
+                        <Copy className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy project name</TooltipContent>
+                  </Tooltip>
                 )}
               </div>
 
-              {data.ownerName && (
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-muted-foreground text-xs">Developer:</span>
-                  {data.ownerProfile ? (
+              {/* Detail rows — divided manifest style */}
+              <div className="divide-y divide-border/30 -mx-1">
+                {data.ownerName && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <Building2 className="w-3 h-3" /> Developer
+                    </span>
+                    {data.ownerProfile ? (
+                      <a
+                        href={data.ownerProfile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-foreground text-xs font-medium hover:text-[hsl(var(--green))] truncate max-w-[160px]"
+                      >
+                        {data.ownerName}
+                        <ExternalLink className="w-2.5 h-2.5 text-muted-foreground" />
+                      </a>
+                    ) : (
+                      <span className="text-foreground text-xs font-medium truncate max-w-[160px]">{data.ownerName}</span>
+                    )}
+                  </div>
+                )}
+                {data.discordGuildId && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <MessageCircle className="w-3 h-3" /> Discord
+                    </span>
                     <a
-                      href={data.ownerProfile}
+                      href={`https://discord.gg/${data.discordGuildId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-foreground text-xs font-medium hover:underline truncate"
+                      className="inline-flex items-center gap-1 text-[hsl(var(--red))] text-xs font-medium hover:underline truncate max-w-[160px]"
                     >
-                      {data.ownerName}
+                      discord.gg/{data.discordGuildId}
+                      <ExternalLink className="w-2.5 h-2.5" />
                     </a>
-                  ) : (
-                    <span className="text-foreground text-xs font-medium truncate">{data.ownerName}</span>
-                  )}
+                  </div>
+                )}
+                {website && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <Globe className="w-3 h-3" /> Website
+                    </span>
+                    <a
+                      href={website.startsWith('http') ? website : `https://${website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[hsl(var(--red))] text-xs font-medium hover:underline truncate max-w-[160px]"
+                    >
+                      {website.replace(/^https?:\/\//, '')}
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-2 px-1 py-2">
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                    {data.private ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />} Access
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${data.private ? 'bg-[hsl(var(--red))]/10 text-[hsl(var(--red))] border-[hsl(var(--red))]/25' : 'bg-[hsl(var(--green))]/10 text-[hsl(var(--green))] border-[hsl(var(--green))]/25'}`}>
+                    {data.private ? 'Private' : 'Public'}
+                  </span>
                 </div>
-              )}
-              {data.discordGuildId && (
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-xs">Discord:</span>
-                  <a
-                    href={`https://discord.gg/${data.discordGuildId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[hsl(var(--red))] text-xs font-medium hover:underline underline truncate"
-                  >
-                    discord.gg/{data.discordGuildId}
-                  </a>
+                <div className="flex items-center justify-between gap-2 px-1 py-2">
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                    <Users className="w-3 h-3" /> Population
+                  </span>
+                  <span className="text-xs font-mono tabular-nums text-foreground">
+                    {effectivePlayerCount}<span className="text-muted-foreground">/{data.maxPlayers || "—"}</span>
+                    <span className="text-muted-foreground ml-1">({playerPercentage.toFixed(0)}%)</span>
+                  </span>
                 </div>
-              )}
-              {website && (
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-xs">Hjemmeside:</span>
-                  <a
-                    href={website.startsWith('http') ? website : `https://${website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[hsl(var(--red))] text-xs font-medium hover:underline underline truncate"
-                  >
-                    {website.replace(/^https?:\/\//, '')}
-                  </a>
-                </div>
-              )}
-              <div className="flex items-center justify-between gap-2 pt-1">
-                <span className="text-muted-foreground text-xs">Access</span>
-                <span className={`text-xs font-semibold ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}>
-                  {data.private ? 'Private' : 'Public'}
-                </span>
+                {avgPing > 0 && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <Signal className="w-3 h-3" /> Network
+                    </span>
+                    <span className="text-xs font-mono tabular-nums" style={{ color: pingTone }}>
+                      {avgPing}ms <span className="text-muted-foreground">({pingMin}–{pingMax})</span>
+                    </span>
+                  </div>
+                )}
+                {data.locale && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <Languages className="w-3 h-3" /> Locale
+                    </span>
+                    <span className="text-xs font-mono uppercase text-foreground">{data.locale}</span>
+                  </div>
+                )}
               </div>
             </div>
           </section>
