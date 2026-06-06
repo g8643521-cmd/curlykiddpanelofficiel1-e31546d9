@@ -22,6 +22,15 @@ import {
   Info,
   ShieldCheck,
   Eye,
+  Lock,
+  Unlock,
+  Activity,
+  Gauge,
+  Signal,
+  Languages,
+  Layers,
+  Building2,
+  Link2,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
