@@ -757,12 +757,9 @@ const ServerDetails = ({
                 >
                   <span>#</span>
                   <span>Player</span>
-                  <span>Character</span>
-                  <span>Job</span>
-                  <span>Session</span>
-                  <span>Playtime</span>
-                  <span>Last Seen</span>
-                  <span>Country</span>
+                  <span>Steam</span>
+                  <span>Discord</span>
+                  <span>Rockstar</span>
                   <span>Ping</span>
                   <span className="text-right">Actions</span>
                 </div>
