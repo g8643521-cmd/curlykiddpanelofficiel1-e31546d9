@@ -12,8 +12,20 @@ interface Props {
   children: ReactNode;
 }
 
-const parse = (ids: string[] = []) => {
-  const out: Record<string, string> = {};
+interface ParsedIds {
+  steam?: string;
+  steam64?: string;
+  discord?: string;
+  license?: string;
+  license2?: string;
+  fivem?: string;
+  xbl?: string;
+  live?: string;
+  [k: string]: string | undefined;
+}
+
+const parse = (ids: string[] = []): ParsedIds => {
+  const out: ParsedIds = {};
   for (const id of ids) {
     const idx = id.indexOf(":");
     if (idx < 0) continue;
@@ -21,15 +33,14 @@ const parse = (ids: string[] = []) => {
     const v = id.slice(idx + 1);
     if (!(k in out)) out[k] = v;
   }
-  let steam64: string | undefined;
   if (out.steam && /^[0-9a-fA-F]+$/.test(out.steam)) {
     try {
-      steam64 = BigInt("0x" + out.steam).toString();
+      out.steam64 = BigInt("0x" + out.steam).toString();
     } catch {
       /* ignore */
     }
   }
-  return { ...out, steam64 };
+  return out;
 };
 
 const Row = ({
