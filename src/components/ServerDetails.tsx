@@ -632,77 +632,130 @@ const ServerDetails = ({
               <Eye className="w-4 h-4 text-muted-foreground" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Details</h3>
             </div>
-            <div className="space-y-2.5 text-sm">
+            <div className="text-sm">
               {/* cfx chip + project chip row */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 mb-3">
                 {serverCode && (
-                  <button
-                    onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
-                  >
-                    <span className="font-mono text-xs text-foreground/90">cfx.re/join/{serverCode}</span>
-                    <Copy className="w-3 h-3 text-muted-foreground" />
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
+                      >
+                        <Link2 className="w-3 h-3 text-[hsl(var(--green))]/80" />
+                        <span className="font-mono text-xs text-foreground/90">cfx.re/join/{serverCode}</span>
+                        <Copy className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy CFX join URL</TooltipContent>
+                  </Tooltip>
                 )}
                 {data.projectName && (
-                  <button
-                    onClick={() => copyToClipboard(stripColorCodes(data.projectName!), "Project name")}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
-                  >
-                    <span className="text-xs text-foreground/90 truncate max-w-[140px]">{stripColorCodes(data.projectName)}</span>
-                    <Copy className="w-3 h-3 text-muted-foreground" />
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => copyToClipboard(stripColorCodes(data.projectName!), "Project name")}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
+                      >
+                        <Layers className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-xs text-foreground/90 truncate max-w-[140px]">{stripColorCodes(data.projectName)}</span>
+                        <Copy className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy project name</TooltipContent>
+                  </Tooltip>
                 )}
               </div>
 
-              {data.ownerName && (
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-muted-foreground text-xs">Developer:</span>
-                  {data.ownerProfile ? (
+              {/* Detail rows — divided manifest style */}
+              <div className="divide-y divide-border/30 -mx-1">
+                {data.ownerName && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <Building2 className="w-3 h-3" /> Developer
+                    </span>
+                    {data.ownerProfile ? (
+                      <a
+                        href={data.ownerProfile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-foreground text-xs font-medium hover:text-[hsl(var(--green))] truncate max-w-[160px]"
+                      >
+                        {data.ownerName}
+                        <ExternalLink className="w-2.5 h-2.5 text-muted-foreground" />
+                      </a>
+                    ) : (
+                      <span className="text-foreground text-xs font-medium truncate max-w-[160px]">{data.ownerName}</span>
+                    )}
+                  </div>
+                )}
+                {data.discordGuildId && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <MessageCircle className="w-3 h-3" /> Discord
+                    </span>
                     <a
-                      href={data.ownerProfile}
+                      href={`https://discord.gg/${data.discordGuildId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-foreground text-xs font-medium hover:underline truncate"
+                      className="inline-flex items-center gap-1 text-[hsl(var(--red))] text-xs font-medium hover:underline truncate max-w-[160px]"
                     >
-                      {data.ownerName}
+                      discord.gg/{data.discordGuildId}
+                      <ExternalLink className="w-2.5 h-2.5" />
                     </a>
-                  ) : (
-                    <span className="text-foreground text-xs font-medium truncate">{data.ownerName}</span>
-                  )}
+                  </div>
+                )}
+                {website && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <Globe className="w-3 h-3" /> Website
+                    </span>
+                    <a
+                      href={website.startsWith('http') ? website : `https://${website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[hsl(var(--red))] text-xs font-medium hover:underline truncate max-w-[160px]"
+                    >
+                      {website.replace(/^https?:\/\//, '')}
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-2 px-1 py-2">
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                    {data.private ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />} Access
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${data.private ? 'bg-[hsl(var(--red))]/10 text-[hsl(var(--red))] border-[hsl(var(--red))]/25' : 'bg-[hsl(var(--green))]/10 text-[hsl(var(--green))] border-[hsl(var(--green))]/25'}`}>
+                    {data.private ? 'Private' : 'Public'}
+                  </span>
                 </div>
-              )}
-              {data.discordGuildId && (
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-xs">Discord:</span>
-                  <a
-                    href={`https://discord.gg/${data.discordGuildId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[hsl(var(--red))] text-xs font-medium hover:underline underline truncate"
-                  >
-                    discord.gg/{data.discordGuildId}
-                  </a>
+                <div className="flex items-center justify-between gap-2 px-1 py-2">
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                    <Users className="w-3 h-3" /> Population
+                  </span>
+                  <span className="text-xs font-mono tabular-nums text-foreground">
+                    {effectivePlayerCount}<span className="text-muted-foreground">/{data.maxPlayers || "—"}</span>
+                    <span className="text-muted-foreground ml-1">({playerPercentage.toFixed(0)}%)</span>
+                  </span>
                 </div>
-              )}
-              {website && (
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-xs">Hjemmeside:</span>
-                  <a
-                    href={website.startsWith('http') ? website : `https://${website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[hsl(var(--red))] text-xs font-medium hover:underline underline truncate"
-                  >
-                    {website.replace(/^https?:\/\//, '')}
-                  </a>
-                </div>
-              )}
-              <div className="flex items-center justify-between gap-2 pt-1">
-                <span className="text-muted-foreground text-xs">Access</span>
-                <span className={`text-xs font-semibold ${data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}`}>
-                  {data.private ? 'Private' : 'Public'}
-                </span>
+                {avgPing > 0 && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <Signal className="w-3 h-3" /> Network
+                    </span>
+                    <span className="text-xs font-mono tabular-nums" style={{ color: pingTone }}>
+                      {avgPing}ms <span className="text-muted-foreground">({pingMin}–{pingMax})</span>
+                    </span>
+                  </div>
+                )}
+                {data.locale && (
+                  <div className="flex items-center justify-between gap-2 px-1 py-2">
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
+                      <Languages className="w-3 h-3" /> Locale
+                    </span>
+                    <span className="text-xs font-mono uppercase text-foreground">{data.locale}</span>
+                  </div>
+                )}
               </div>
             </div>
           </section>
