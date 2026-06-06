@@ -34,14 +34,13 @@ import { toast } from "sonner";
 import AddCheaterDialog from "./AddCheaterDialog";
 import PlayerNotesDialog from "./PlayerNotesDialog";
 import PlayerHoverCard from "./PlayerHoverCard";
-import { getPlayerPlaceholder } from "@/lib/playerPlaceholder";
 import SensitiveText from "./SensitiveText";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useStreamerMode } from "@/hooks/useStreamerMode";
 
 // Shared grid template — used by row + header in ServerDetails to stay aligned.
 export const PLAYER_ROW_GRID =
-  "44px minmax(200px,2fr) minmax(120px,1.2fr) minmax(110px,1fr) minmax(90px,0.9fr) minmax(110px,1fr) minmax(110px,1fr) minmax(80px,0.8fr) minmax(110px,1fr) 76px";
+  "44px minmax(220px,2fr) minmax(140px,1.2fr) minmax(140px,1.2fr) minmax(140px,1.2fr) minmax(110px,1fr) 76px";
 
 
 interface PlayerIdentifiers {
@@ -148,7 +147,6 @@ const PlayerRowCompact = ({
   const hasIdentifiers = Object.keys(identifiers).length > 0;
   const isCheater = !!cheaterReport;
   const ping = pingClassify(player.ping);
-  const placeholder = getPlayerPlaceholder(player);
 
   const avatarUrl = identifiers.steam && !avatarError ? getSteamAvatarUrl(identifiers.steam) : null;
 
@@ -244,32 +242,62 @@ const PlayerRowCompact = ({
                 </div>
               </PlayerHoverCard>
 
-              {/* Character */}
-              <div className="truncate text-foreground/85">{placeholder.characterName}</div>
-
-              {/* Job */}
+              {/* Steam */}
               <div className="truncate">
-                <span className="inline-block px-1.5 py-0.5 rounded bg-secondary/60 border border-border/30 text-[10px] text-foreground/85">
-                  {placeholder.job}
-                </span>
+                {identifiers.steam ? (
+                  <a
+                    href={`https://steamcommunity.com/profiles/${identifiers.steam}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-foreground/85 hover:text-[hsl(var(--green))] transition-colors"
+                    title={identifiers.steam}
+                  >
+                    <SensitiveText type="identifier" as="span" className="truncate max-w-[160px]">
+                      {identifiers.steam}
+                    </SensitiveText>
+                    <ExternalLink className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground/50">—</span>
+                )}
               </div>
 
-              {/* Session Time */}
-              <div className="font-mono tabular-nums text-foreground/80">{placeholder.sessionTime}</div>
-
-              {/* Total Playtime */}
-              <div className="font-mono tabular-nums text-foreground/80">{placeholder.totalPlaytime}</div>
-
-              {/* Last Seen */}
-              <div className="text-[10px] text-[hsl(var(--green))] uppercase tracking-wider truncate">
-                {placeholder.lastSeen}
+              {/* Discord */}
+              <div className="truncate">
+                {identifiers.discord ? (
+                  <button
+                    onClick={() => copyToClipboard(identifiers.discord!, "Discord ID")}
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-foreground/85 hover:text-[hsl(var(--green))] transition-colors"
+                    title={identifiers.discord}
+                  >
+                    <SensitiveText type="identifier" as="span" className="truncate max-w-[160px]">
+                      {identifiers.discord}
+                    </SensitiveText>
+                    <Copy className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  </button>
+                ) : (
+                  <span className="text-muted-foreground/50">—</span>
+                )}
               </div>
 
-              {/* Country */}
-              <div className="truncate text-foreground/85">
-                <span className="mr-1">{placeholder.country.flag}</span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{placeholder.country.code}</span>
+              {/* Rockstar (license) */}
+              <div className="truncate">
+                {identifiers.license ? (
+                  <button
+                    onClick={() => copyToClipboard(identifiers.license!, "Rockstar License")}
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-foreground/85 hover:text-[hsl(var(--green))] transition-colors"
+                    title={identifiers.license}
+                  >
+                    <SensitiveText type="identifier" as="span" className="truncate max-w-[160px]">
+                      {identifiers.license}
+                    </SensitiveText>
+                    <Copy className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  </button>
+                ) : (
+                  <span className="text-muted-foreground/50">—</span>
+                )}
               </div>
+
 
               {/* Ping */}
               <div className="flex items-center gap-1.5">

@@ -37,9 +37,6 @@ import SensitiveText from "@/components/SensitiveText";
 import ResourceCategories from "@/components/ResourceCategories";
 import ServerOwnerCard from "@/components/ServerOwnerCard";
 import ResourceInspector from "@/components/ResourceInspector";
-import PlayerAnalytics from "@/components/PlayerAnalytics";
-import ServerHealth from "@/components/ServerHealth";
-import ResourceMetricsList from "@/components/ResourceMetricsList";
 
 
 import { useAdminStatus } from "@/hooks/useAdminStatus";
@@ -757,12 +754,9 @@ const ServerDetails = ({
                 >
                   <span>#</span>
                   <span>Player</span>
-                  <span>Character</span>
-                  <span>Job</span>
-                  <span>Session</span>
-                  <span>Playtime</span>
-                  <span>Last Seen</span>
-                  <span>Country</span>
+                  <span>Steam</span>
+                  <span>Discord</span>
+                  <span>Rockstar</span>
                   <span>Ping</span>
                   <span className="text-right">Actions</span>
                 </div>
@@ -801,16 +795,7 @@ const ServerDetails = ({
         );
       })()}
 
-      {/* ============ PLAYER ANALYTICS ============ */}
-      <PlayerAnalytics players={data.players} />
 
-      {/* ============ SERVER HEALTH ============ */}
-      <ServerHealth
-        avgPing={avgPing}
-        currentPlayers={effectivePlayerCount}
-        maxPlayers={data.maxPlayers}
-        resourceCount={data.resources.length}
-      />
 
 
       {/* ============ SERVER RESOURCES ============ */}
@@ -863,8 +848,7 @@ const ServerDetails = ({
         </div>
       </section>
 
-      {/* ============ RESOURCE METRICS ============ */}
-      <ResourceMetricsList resources={data.resources} />
+
 
       {/* Resource Categories */}
       <ResourceCategories resources={data.resources} />
