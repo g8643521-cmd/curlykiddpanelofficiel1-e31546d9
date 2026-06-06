@@ -147,7 +147,6 @@ const PlayerRowCompact = ({
   const hasIdentifiers = Object.keys(identifiers).length > 0;
   const isCheater = !!cheaterReport;
   const ping = pingClassify(player.ping);
-  const placeholder = getPlayerPlaceholder(player);
 
   const avatarUrl = identifiers.steam && !avatarError ? getSteamAvatarUrl(identifiers.steam) : null;
 
