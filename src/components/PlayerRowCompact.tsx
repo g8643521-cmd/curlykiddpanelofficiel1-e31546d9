@@ -242,32 +242,62 @@ const PlayerRowCompact = ({
                 </div>
               </PlayerHoverCard>
 
-              {/* Character */}
-              <div className="truncate text-foreground/85">{placeholder.characterName}</div>
-
-              {/* Job */}
+              {/* Steam */}
               <div className="truncate">
-                <span className="inline-block px-1.5 py-0.5 rounded bg-secondary/60 border border-border/30 text-[10px] text-foreground/85">
-                  {placeholder.job}
-                </span>
+                {identifiers.steam ? (
+                  <a
+                    href={`https://steamcommunity.com/profiles/${identifiers.steam}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-foreground/85 hover:text-[hsl(var(--green))] transition-colors"
+                    title={identifiers.steam}
+                  >
+                    <SensitiveText type="identifier" as="span" className="truncate max-w-[160px]">
+                      {identifiers.steam}
+                    </SensitiveText>
+                    <ExternalLink className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground/50">—</span>
+                )}
               </div>
 
-              {/* Session Time */}
-              <div className="font-mono tabular-nums text-foreground/80">{placeholder.sessionTime}</div>
-
-              {/* Total Playtime */}
-              <div className="font-mono tabular-nums text-foreground/80">{placeholder.totalPlaytime}</div>
-
-              {/* Last Seen */}
-              <div className="text-[10px] text-[hsl(var(--green))] uppercase tracking-wider truncate">
-                {placeholder.lastSeen}
+              {/* Discord */}
+              <div className="truncate">
+                {identifiers.discord ? (
+                  <button
+                    onClick={() => copyToClipboard(identifiers.discord!, "Discord ID")}
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-foreground/85 hover:text-[hsl(var(--green))] transition-colors"
+                    title={identifiers.discord}
+                  >
+                    <SensitiveText type="identifier" as="span" className="truncate max-w-[160px]">
+                      {identifiers.discord}
+                    </SensitiveText>
+                    <Copy className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  </button>
+                ) : (
+                  <span className="text-muted-foreground/50">—</span>
+                )}
               </div>
 
-              {/* Country */}
-              <div className="truncate text-foreground/85">
-                <span className="mr-1">{placeholder.country.flag}</span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{placeholder.country.code}</span>
+              {/* Rockstar (license) */}
+              <div className="truncate">
+                {identifiers.license ? (
+                  <button
+                    onClick={() => copyToClipboard(identifiers.license!, "Rockstar License")}
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-foreground/85 hover:text-[hsl(var(--green))] transition-colors"
+                    title={identifiers.license}
+                  >
+                    <SensitiveText type="identifier" as="span" className="truncate max-w-[160px]">
+                      {identifiers.license}
+                    </SensitiveText>
+                    <Copy className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  </button>
+                ) : (
+                  <span className="text-muted-foreground/50">—</span>
+                )}
               </div>
+
 
               {/* Ping */}
               <div className="flex items-center gap-1.5">
