@@ -1072,18 +1072,25 @@ const ServerDetails = ({
                 {/* Rows */}
                 <div className="max-h-[640px] overflow-y-auto divide-y divide-border/20">
                   {sortedPlayers.length > 0 ? (
-                    sortedPlayers.map((player, index) => (
-                      <PlayerRowCompact
-                        key={`${player.id}-${player.name}`}
-                        player={player}
-                        index={index}
-                        searchQuery={playerSearch}
-                        cheaterReport={isCheater(player)}
-                        serverCode={serverCode || undefined}
-                        serverName={serverNameClean}
-                        onCheaterAdded={fetchCheaters}
-                      />
-                    ))
+                    (() => {
+                      const total = data.players.length;
+                      const idsAsc = [...data.players].sort((a, b) => a.id - b.id).map((p) => p.id);
+                      const rankById = new Map<number, number>();
+                      idsAsc.forEach((id, i) => rankById.set(id, i + 1));
+                      return sortedPlayers.map((player, index) => (
+                        <PlayerRowCompact
+                          key={`${player.id}-${player.name}`}
+                          player={player}
+                          index={index}
+                          searchQuery={playerSearch}
+                          cheaterReport={isCheater(player)}
+                          serverCode={serverCode || undefined}
+                          serverName={serverNameClean}
+                          onCheaterAdded={fetchCheaters}
+                          joinOrder={{ rank: rankById.get(player.id) || 0, total }}
+                        />
+                      ));
+                    })()
                   ) : (
                     <div className="py-12 text-center">
                       <Users className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
