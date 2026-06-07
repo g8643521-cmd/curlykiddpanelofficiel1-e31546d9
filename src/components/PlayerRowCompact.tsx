@@ -199,7 +199,7 @@ const PlayerRowCompact = ({
               </div>
 
               {/* Name + avatar (hover card trigger) */}
-              <PlayerHoverCard player={player}>
+              <PlayerHoverCard player={player} joinOrder={joinOrder}>
                 <div className="flex items-center gap-2.5 min-w-0 cursor-default">
                   <div className="relative shrink-0">
                     {avatarUrl ? (
@@ -239,7 +239,50 @@ const PlayerRowCompact = ({
                         </Tooltip>
                       )}
                     </div>
-                    <div className="text-[10px] font-mono text-muted-foreground/80">#{player.id}</div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[10px] font-mono text-muted-foreground/80">#{player.id}</span>
+                      {joinOrder && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-[9px] font-mono text-muted-foreground/70 tabular-nums">
+                              · slot {joinOrder.rank}/{joinOrder.total}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>Server slot order (by player.id)</TooltipContent>
+                        </Tooltip>
+                      )}
+                      {/* Identifier presence dots — real data only */}
+                      {(player.identifiers || []).length > 0 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center gap-0.5 ml-0.5">
+                              {[
+                                { k: "Steam", on: !!identifiers.steam, c: "hsl(var(--green))" },
+                                { k: "Discord", on: !!identifiers.discord, c: "#5865F2" },
+                                { k: "Rockstar", on: !!identifiers.license, c: "hsl(var(--orange))" },
+                                { k: "FiveM", on: !!identifiers.fivem, c: "hsl(var(--yellow))" },
+                                { k: "Xbox", on: !!identifiers.xbl || !!identifiers.live, c: "hsl(var(--green))" },
+                              ].map((d) => (
+                                <span
+                                  key={d.k}
+                                  title={`${d.k}: ${d.on ? "yes" : "no"}`}
+                                  className="w-1.5 h-1.5 rounded-full"
+                                  style={{
+                                    background: d.on ? d.c : "hsl(var(--muted-foreground) / 0.25)",
+                                  }}
+                                />
+                              ))}
+                              <span className="text-[9px] font-mono text-muted-foreground/70 ml-1 tabular-nums">
+                                {(player.identifiers || []).length}
+                              </span>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Identifiers present: Steam · Discord · Rockstar · FiveM · Xbox/Live
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
                   </div>
                 </div>
               </PlayerHoverCard>
