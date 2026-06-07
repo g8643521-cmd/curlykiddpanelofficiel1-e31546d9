@@ -136,6 +136,7 @@ const PlayerRowCompact = ({
   serverCode,
   serverName,
   onCheaterAdded,
+  joinOrder,
 }: Props) => {
   const [avatarError, setAvatarError] = useState(false);
   const [expanded, setExpanded] = useState(false);
