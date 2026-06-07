@@ -31,6 +31,8 @@ import {
   Layers,
   Building2,
   Link2,
+  Gamepad2,
+  Hash,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -624,200 +626,335 @@ const ServerDetails = ({
           )}
         </div>
 
-        {/* RIGHT: Details side panel — matches FiveM browser style */}
-        <aside className="rounded-2xl border border-border/40 bg-card p-5 space-y-5 lg:sticky lg:top-4 h-fit shadow-xl">
-          {/* DETAILS */}
-          <section>
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/40">
-              <Eye className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Details</h3>
+        {/* RIGHT: Grouped intelligence sidebar */}
+        <aside className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm lg:sticky lg:top-4 h-fit overflow-hidden shadow-xl">
+          {/* Header */}
+          <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-border/40 bg-background/30">
+            <div className="flex items-center gap-2 min-w-0">
+              <Eye className="w-3.5 h-3.5 text-[hsl(var(--green))]" />
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-foreground">
+                Server Intelligence
+              </h3>
             </div>
-            <div className="text-sm">
-              {/* cfx chip + project chip row */}
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {serverCode && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => copyToClipboard(`cfx.re/join/${serverCode}`, "CFX URL")}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
-                      >
-                        <Link2 className="w-3 h-3 text-[hsl(var(--green))]/80" />
-                        <span className="font-mono text-xs text-foreground/90">cfx.re/join/{serverCode}</span>
-                        <Copy className="w-3 h-3 text-muted-foreground" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Copy CFX join URL</TooltipContent>
-                  </Tooltip>
-                )}
-                {data.projectName && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => copyToClipboard(stripColorCodes(data.projectName!), "Project name")}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border/40 hover:bg-secondary/70 transition-colors"
-                      >
-                        <Layers className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-xs text-foreground/90 truncate max-w-[140px]">{stripColorCodes(data.projectName)}</span>
-                        <Copy className="w-3 h-3 text-muted-foreground" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Copy project name</TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
+            <span
+              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
+                data.private
+                  ? 'bg-[hsl(var(--red))]/10 text-[hsl(var(--red))] border-[hsl(var(--red))]/25'
+                  : 'bg-[hsl(var(--green))]/10 text-[hsl(var(--green))] border-[hsl(var(--green))]/25'
+              }`}
+            >
+              {data.private ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5" />}
+              {data.private ? 'Private' : 'Public'}
+            </span>
+          </div>
 
-              {/* Detail rows — divided manifest style */}
-              <div className="divide-y divide-border/30 -mx-1">
-                {data.ownerName && (
-                  <div className="flex items-center justify-between gap-2 px-1 py-2">
-                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
-                      <Building2 className="w-3 h-3" /> Developer
-                    </span>
-                    {data.ownerProfile ? (
+          {(() => {
+            type Row = {
+              label: string;
+              value: React.ReactNode;
+              icon?: React.ComponentType<{ className?: string }>;
+              mono?: boolean;
+              copy?: string;
+              href?: string;
+              tone?: string;
+            };
+            const SectionRow = ({ row }: { row: Row }) => {
+              const Icon = row.icon;
+              const inner = (
+                <span
+                  className={`text-[11px] font-medium text-right truncate max-w-[170px] ${row.mono ? 'font-mono' : ''}`}
+                  style={row.tone ? { color: row.tone } : undefined}
+                >
+                  {row.value}
+                </span>
+              );
+              return (
+                <div className="group flex items-center justify-between gap-2 px-4 py-1.5 hover:bg-background/30 transition-colors">
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[9.5px] uppercase tracking-wider">
+                    {Icon && <Icon className="w-3 h-3" />}
+                    {row.label}
+                  </span>
+                  <div className="flex items-center gap-1 min-w-0">
+                    {row.href ? (
                       <a
-                        href={data.ownerProfile}
+                        href={row.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-foreground text-xs font-medium hover:text-[hsl(var(--green))] truncate max-w-[160px]"
+                        className="inline-flex items-center gap-1 text-[hsl(var(--green))] hover:underline"
                       >
-                        {data.ownerName}
+                        {inner}
                         <ExternalLink className="w-2.5 h-2.5 text-muted-foreground" />
                       </a>
                     ) : (
-                      <span className="text-foreground text-xs font-medium truncate max-w-[160px]">{data.ownerName}</span>
+                      <span className="text-foreground">{inner}</span>
+                    )}
+                    {row.copy && (
+                      <button
+                        onClick={() => copyToClipboard(row.copy!, row.label)}
+                        className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
                     )}
                   </div>
-                )}
-                {data.discordGuildId && (
-                  <div className="flex items-center justify-between gap-2 px-1 py-2">
-                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
-                      <MessageCircle className="w-3 h-3" /> Discord
-                    </span>
-                    <a
-                      href={`https://discord.gg/${data.discordGuildId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[hsl(var(--red))] text-xs font-medium hover:underline truncate max-w-[160px]"
-                    >
-                      discord.gg/{data.discordGuildId}
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-                )}
-                {website && (
-                  <div className="flex items-center justify-between gap-2 px-1 py-2">
-                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
-                      <Globe className="w-3 h-3" /> Website
-                    </span>
-                    <a
-                      href={website.startsWith('http') ? website : `https://${website}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[hsl(var(--red))] text-xs font-medium hover:underline truncate max-w-[160px]"
-                    >
-                      {website.replace(/^https?:\/\//, '')}
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-                )}
-                <div className="flex items-center justify-between gap-2 px-1 py-2">
-                  <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
-                    {data.private ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />} Access
-                  </span>
-                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${data.private ? 'bg-[hsl(var(--red))]/10 text-[hsl(var(--red))] border-[hsl(var(--red))]/25' : 'bg-[hsl(var(--green))]/10 text-[hsl(var(--green))] border-[hsl(var(--green))]/25'}`}>
-                    {data.private ? 'Private' : 'Public'}
-                  </span>
                 </div>
-                <div className="flex items-center justify-between gap-2 px-1 py-2">
-                  <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
-                    <Users className="w-3 h-3" /> Population
-                  </span>
-                  <span className="text-xs font-mono tabular-nums text-foreground">
-                    {effectivePlayerCount}<span className="text-muted-foreground">/{data.maxPlayers || "—"}</span>
-                    <span className="text-muted-foreground ml-1">({playerPercentage.toFixed(0)}%)</span>
-                  </span>
-                </div>
-                {avgPing > 0 && (
-                  <div className="flex items-center justify-between gap-2 px-1 py-2">
-                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
-                      <Signal className="w-3 h-3" /> Network
-                    </span>
-                    <span className="text-xs font-mono tabular-nums" style={{ color: pingTone }}>
-                      {avgPing}ms <span className="text-muted-foreground">({pingMin}–{pingMax})</span>
-                    </span>
-                  </div>
-                )}
-                {data.locale && (
-                  <div className="flex items-center justify-between gap-2 px-1 py-2">
-                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wider">
-                      <Languages className="w-3 h-3" /> Locale
-                    </span>
-                    <span className="text-xs font-mono uppercase text-foreground">{data.locale}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
+              );
+            };
 
-          {/* RESOURCER */}
-          {data.resources.length > 0 && (
-            <section>
-              <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/40">
-                <div className="flex items-center gap-2">
-                  <Download className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Resourcer</h3>
-                </div>
-                <span className="text-xs text-muted-foreground tabular-nums font-semibold">{data.resources.length}</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {(showAllSideResources ? data.resources : data.resources.slice(0, 5)).map((r) => (
-                  <span key={r} className="px-2 py-0.5 rounded bg-secondary border border-border/40 text-[10px] font-mono text-foreground/80 truncate max-w-[120px]">
-                    {r}
-                  </span>
-                ))}
-                {data.resources.length > 5 && (
-                  <button
-                    onClick={() => setShowAllSideResources((v) => !v)}
-                    className="px-2 py-0.5 rounded bg-secondary border border-border/40 text-[10px] font-medium text-foreground/90 hover:bg-secondary/70 transition-colors"
-                  >
-                    {showAllSideResources ? 'Show less' : 'Show all'}
-                  </button>
-                )}
-              </div>
-            </section>
-          )}
+            const Section = ({
+              title,
+              icon: Icon,
+              rows,
+              accent = 'hsl(var(--green))',
+            }: {
+              title: string;
+              icon: React.ComponentType<{ className?: string }>;
+              rows: Row[];
+              accent?: string;
+            }) => {
+              if (rows.length === 0) return null;
+              return (
+                <section className="border-b border-border/30 last:border-b-0">
+                  <div className="flex items-center justify-between px-4 py-2 bg-background/20">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1 h-3 rounded-sm" style={{ background: accent }} />
+                      <Icon className="w-3 h-3 text-muted-foreground" />
+                      <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-foreground/90">
+                        {title}
+                      </h4>
+                    </div>
+                    <span className="text-[9px] font-mono text-muted-foreground/60 tabular-nums">
+                      {rows.length}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-border/20">
+                    {rows.map((r, i) => (
+                      <SectionRow key={i} row={r} />
+                    ))}
+                  </div>
+                </section>
+              );
+            };
 
-          {/* TAGS */}
+            // ---- CONNECTION ----
+            const connection: Row[] = [];
+            if (serverCode)
+              connection.push({
+                label: 'CFX URL',
+                value: `cfx.re/join/${serverCode}`,
+                icon: Link2,
+                mono: true,
+                copy: `cfx.re/join/${serverCode}`,
+              });
+            if (data.ip && data.port)
+              connection.push({
+                label: 'Endpoint',
+                value: `${data.ip}:${data.port}`,
+                icon: Globe,
+                mono: true,
+                copy: `${data.ip}:${data.port}`,
+              });
+            connection.push({
+              label: 'Access',
+              value: data.private ? 'Private / Whitelist' : 'Public',
+              icon: data.private ? Lock : Unlock,
+              tone: data.private ? 'hsl(var(--red))' : 'hsl(var(--green))',
+            });
+            connection.push({
+              label: 'Population',
+              value: (
+                <>
+                  {effectivePlayerCount}
+                  <span className="text-muted-foreground">/{data.maxPlayers || '—'}</span>
+                  <span className="text-muted-foreground ml-1">({playerPercentage.toFixed(0)}%)</span>
+                </>
+              ),
+              icon: Users,
+              mono: true,
+            });
+            if (avgPing > 0)
+              connection.push({
+                label: 'Network',
+                value: (
+                  <>
+                    {avgPing}ms <span className="text-muted-foreground">({pingMin}–{pingMax})</span>
+                  </>
+                ),
+                icon: Signal,
+                mono: true,
+                tone: pingTone,
+              });
+
+            // ---- SERVER ----
+            const server: Row[] = [];
+            if (data.projectName)
+              server.push({
+                label: 'Project',
+                value: stripColorCodes(data.projectName),
+                icon: Layers,
+              });
+            if (data.locale)
+              server.push({ label: 'Locale', value: data.locale.toUpperCase(), icon: Languages, mono: true });
+            if (data.gametype)
+              server.push({ label: 'Game Type', value: data.gametype, icon: Gamepad2 });
+            if (data.mapname)
+              server.push({ label: 'Map', value: data.mapname, icon: MapPin });
+            if (data.premiumTier)
+              server.push({
+                label: 'Premium',
+                value: <span className="capitalize">{data.premiumTier}</span>,
+                icon: Star,
+                tone: 'hsl(var(--yellow))',
+              });
+            if (data.tags && parseTags(data.tags).length)
+              server.push({
+                label: 'Tags',
+                value: `${parseTags(data.tags).length} tags`,
+                icon: Tag,
+                mono: true,
+              });
+
+            // ---- RUNTIME ----
+            const runtime: Row[] = [];
+            runtime.push({
+              label: 'Game Build',
+              value: data.enforceGameBuild ? `b${data.enforceGameBuild}` : 'Default',
+              icon: Hash,
+              mono: true,
+            });
+            runtime.push({
+              label: 'OneSync',
+              value: data.onesyncEnabled ? 'Enabled' : 'Disabled',
+              icon: Layers,
+              tone: data.onesyncEnabled ? 'hsl(var(--green))' : 'hsl(var(--muted-foreground))',
+            });
+            runtime.push({
+              label: 'Script Hook',
+              value: data.scriptHookAllowed ? 'Allowed' : 'Blocked',
+              icon: ShieldCheck,
+              tone: data.scriptHookAllowed ? 'hsl(var(--orange))' : 'hsl(var(--green))',
+            });
+            if (data.pureLevel)
+              runtime.push({ label: 'Pure Level', value: data.pureLevel, icon: ShieldCheck, mono: true });
+            if (data.enhancedHostSupport !== undefined)
+              runtime.push({
+                label: 'Enhanced Host',
+                value: data.enhancedHostSupport ? 'Yes' : 'No',
+                icon: Server,
+                tone: data.enhancedHostSupport
+                  ? 'hsl(var(--green))'
+                  : 'hsl(var(--muted-foreground))',
+              });
+            runtime.push({
+              label: 'Resources',
+              value: `${data.resources.length} loaded`,
+              icon: Download,
+              mono: true,
+            });
+            if (detectedAntiCheats.length > 0)
+              runtime.push({
+                label: 'Anti-Cheat',
+                value: detectedAntiCheats.map((a) => a.name).join(', '),
+                icon: ShieldCheck,
+                tone: 'hsl(var(--green))',
+              });
+            if (data.txAdmin)
+              runtime.push({ label: 'txAdmin', value: data.txAdmin, icon: Activity, mono: true });
+
+            // ---- DEVELOPER ----
+            const developer: Row[] = [];
+            if (data.ownerName)
+              developer.push({
+                label: 'Developer',
+                value: data.ownerName,
+                icon: Building2,
+                href: data.ownerProfile || undefined,
+              });
+            if (data.discordGuildId)
+              developer.push({
+                label: 'Discord',
+                value: `discord.gg/${data.discordGuildId}`,
+                icon: MessageCircle,
+                href: `https://discord.gg/${data.discordGuildId}`,
+                mono: true,
+              });
+            if (website)
+              developer.push({
+                label: 'Website',
+                value: website.replace(/^https?:\/\//, ''),
+                icon: Globe,
+                href: website.startsWith('http') ? website : `https://${website}`,
+                mono: true,
+              });
+            if (data.upvotePower && data.upvotePower > 0)
+              developer.push({
+                label: 'Upvote Power',
+                value: data.upvotePower.toLocaleString(),
+                icon: Star,
+                mono: true,
+                tone: 'hsl(var(--yellow))',
+              });
+            if (data.burstPower && data.burstPower > 0)
+              developer.push({
+                label: 'Burst Power',
+                value: data.burstPower.toLocaleString(),
+                icon: Activity,
+                mono: true,
+                tone: 'hsl(var(--orange))',
+              });
+            if (data.supportStatus)
+              developer.push({
+                label: 'Support',
+                value: <span className="capitalize">{data.supportStatus}</span>,
+                icon: ShieldCheck,
+              });
+
+            return (
+              <>
+                <Section title="Connection" icon={Link2} rows={connection} accent="hsl(var(--green))" />
+                <Section title="Server" icon={Server} rows={server} accent="hsl(var(--cyan, var(--green)))" />
+                <Section title="Runtime" icon={Activity} rows={runtime} accent="hsl(var(--yellow))" />
+                <Section title="Developer" icon={Building2} rows={developer} accent="hsl(var(--orange))" />
+              </>
+            );
+          })()}
+
+          {/* Footer: tags chip cluster (compact, real data) */}
           {data.tags && parseTags(data.tags).length > 0 && (
-            <section>
-              <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/40">
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Tags</h3>
-                </div>
-                <span className="text-xs text-muted-foreground tabular-nums font-semibold">{parseTags(data.tags).length}</span>
+            <div className="px-4 py-3 border-t border-border/40 bg-background/20">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Tag className="w-3 h-3 text-muted-foreground" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  Tags
+                </span>
+                <span className="text-[9px] font-mono text-muted-foreground/60 ml-auto tabular-nums">
+                  {parseTags(data.tags).length}
+                </span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 {parseTags(data.tags).map((tag, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded bg-secondary border border-border/40 text-[10px] text-foreground/80">
+                  <span
+                    key={idx}
+                    className="px-1.5 py-0.5 rounded bg-secondary/60 border border-border/30 text-[9px] text-foreground/75"
+                  >
                     {tag}
                   </span>
                 ))}
               </div>
-            </section>
+            </div>
           )}
 
-          {/* REPORT SERVER */}
+          {/* Report */}
           <button
-            onClick={() => toast.info("Report submitted for review")}
-            className="w-full inline-flex items-center justify-center gap-1.5 pt-2 text-xs text-muted-foreground hover:text-[hsl(var(--red))] transition-colors"
+            onClick={() => toast.info('Report submitted for review')}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-[hsl(var(--red))] border-t border-border/40 bg-background/10 transition-colors"
           >
-            <AlertTriangle className="w-3.5 h-3.5" />
+            <AlertTriangle className="w-3 h-3" />
             Report Server
           </button>
         </aside>
       </div>
+
 
 
       {/* Project Description */}
@@ -834,59 +971,132 @@ const ServerDetails = ({
       )}
 
 
-      {/* Server Info Grid — refined data manifest */}
+      {/* Server Snapshot — compact KPI tiles with status + context */}
       <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border/30 bg-background/20">
+        <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/70 via-[hsl(var(--green))]/30 to-transparent" />
+        <div className="flex items-center justify-between px-5 py-2.5 border-b border-border/30 bg-background/20">
           <div className="flex items-center gap-2">
             <Server className="w-3.5 h-3.5 text-[hsl(var(--green))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">Server Manifest</h3>
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">Server Snapshot</h3>
+            <span className="text-[9px] font-mono text-muted-foreground/70 border-l border-border/40 pl-3">
+              Real-time configuration
+            </span>
           </div>
-          <span className="text-[10px] font-mono text-muted-foreground">SVR · {(serverCode || 'unknown').toUpperCase()}</span>
+          <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
+            SVR · {(serverCode || 'unknown').toUpperCase()}
+          </span>
         </div>
         {(() => {
-          const rows: Array<{ label: string; value: React.ReactNode; mono?: boolean }> = [
-            { label: 'Game Type', value: data.gametype || 'FiveM' },
-            { label: 'Map', value: data.mapname || 'Unknown' },
-            { label: 'Game Build', value: data.enforceGameBuild || 'Default', mono: true },
-            { label: 'OneSync', value: <span className={data.onesyncEnabled ? 'text-[hsl(var(--green))]' : 'text-muted-foreground'}>{data.onesyncEnabled ? 'Enabled' : 'Disabled'}</span> },
-            { label: 'Premium', value: <span className="capitalize">{data.premiumTier || 'None'}</span> },
-            { label: 'Locale', value: (data.locale || 'en').toUpperCase(), mono: true },
-            { label: 'Server Version', value: data.server ? data.server.split(' ')[0] : 'Unknown', mono: true },
-            { label: 'Script Hook', value: <span className={data.scriptHookAllowed ? 'text-[hsl(var(--orange))]' : 'text-[hsl(var(--green))]'}>{data.scriptHookAllowed ? 'Allowed' : 'Blocked'}</span> },
-            { label: 'Pure Level', value: data.pureLevel || '0', mono: true },
-            { label: 'Access', value: <span className={data.private ? 'text-[hsl(var(--red))]' : 'text-[hsl(var(--green))]'}>{data.private ? 'Private' : 'Public'}</span> },
-            { label: 'Enhanced Host', value: <span className={data.enhancedHostSupport ? 'text-[hsl(var(--green))]' : 'text-muted-foreground'}>{data.enhancedHostSupport ? 'Yes' : 'No'}</span> },
-            { label: 'Support', value: <span className="capitalize">{data.supportStatus || 'Unknown'}</span> },
+          type Tile = {
+            label: string;
+            value: React.ReactNode;
+            context?: React.ReactNode;
+            status?: { tone: string; label: string };
+            icon: React.ComponentType<{ className?: string }>;
+          };
+          const tiles: Tile[] = [
+            {
+              label: 'Game Build',
+              value: data.enforceGameBuild ? `b${data.enforceGameBuild}` : 'Default',
+              context: data.enforceGameBuild ? 'Enforced' : 'No enforcement',
+              status: data.enforceGameBuild
+                ? { tone: 'hsl(var(--green))', label: 'Locked' }
+                : { tone: 'hsl(var(--muted-foreground))', label: 'Open' },
+              icon: Hash,
+            },
+            {
+              label: 'OneSync',
+              value: data.onesyncEnabled ? 'Enabled' : 'Disabled',
+              context: data.onesyncEnabled ? 'Modern netcode' : 'Legacy netcode',
+              status: data.onesyncEnabled
+                ? { tone: 'hsl(var(--green))', label: 'Active' }
+                : { tone: 'hsl(var(--muted-foreground))', label: 'Off' },
+              icon: Layers,
+            },
+            {
+              label: 'Script Hook',
+              value: data.scriptHookAllowed ? 'Allowed' : 'Blocked',
+              context: data.scriptHookAllowed ? 'Mods permitted' : 'Mods denied',
+              status: data.scriptHookAllowed
+                ? { tone: 'hsl(var(--orange))', label: 'Allowed' }
+                : { tone: 'hsl(var(--green))', label: 'Protected' },
+              icon: ShieldCheck,
+            },
+            {
+              label: 'Pure Level',
+              value: data.pureLevel || '0',
+              context:
+                data.pureLevel === '2'
+                  ? 'Strict integrity'
+                  : data.pureLevel === '1'
+                    ? 'Verified files'
+                    : 'No enforcement',
+              status:
+                data.pureLevel === '2'
+                  ? { tone: 'hsl(var(--green))', label: 'Strict' }
+                  : data.pureLevel === '1'
+                    ? { tone: 'hsl(var(--yellow))', label: 'Soft' }
+                    : { tone: 'hsl(var(--muted-foreground))', label: 'None' },
+              icon: ShieldCheck,
+            },
+            {
+              label: 'Premium',
+              value: <span className="capitalize">{data.premiumTier || 'None'}</span>,
+              context: data.premiumTier ? 'CFX boost active' : 'Free tier',
+              status: data.premiumTier
+                ? { tone: 'hsl(var(--yellow))', label: 'Boosted' }
+                : { tone: 'hsl(var(--muted-foreground))', label: 'Free' },
+              icon: Star,
+            },
+            {
+              label: 'Anti-Cheat',
+              value:
+                detectedAntiCheats.length > 0
+                  ? detectedAntiCheats.map((a) => a.name).join(' · ')
+                  : 'None detected',
+              context: `${detectedAntiCheats.length} detected in resources`,
+              status:
+                detectedAntiCheats.length > 0
+                  ? { tone: 'hsl(var(--green))', label: 'Active' }
+                  : { tone: 'hsl(var(--muted-foreground))', label: 'Unknown' },
+              icon: ShieldCheck,
+            },
           ];
-          if (data.txAdmin) rows.push({ label: 'txAdmin', value: data.txAdmin, mono: true });
-          if (data.upvotePower !== undefined && data.upvotePower > 0) rows.push({ label: 'Upvote Power', value: <span className="text-[hsl(var(--yellow))] font-mono">{data.upvotePower.toLocaleString()}</span> });
-          if (data.burstPower !== undefined && data.burstPower > 0) rows.push({ label: 'Burst Power', value: <span className="text-[hsl(var(--orange))] font-mono">{data.burstPower.toLocaleString()}</span> });
           return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 divide-border/20 sm:[&>*:nth-child(n)]:border-b sm:[&>*:nth-child(n)]:border-border/20 sm:[&>*]:border-r sm:[&>*:nth-child(3n)]:border-r-0 sm:[&>*]:border-border/20">
-              {rows.map((row, i) => (
-                <div key={i} className="flex items-center justify-between gap-3 px-5 py-2.5 hover:bg-background/30 transition-colors">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{row.label}</span>
-                  <span className={`text-xs font-medium text-foreground text-right truncate ${row.mono ? 'font-mono' : ''}`}>{row.value}</span>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-x divide-y md:divide-y-0 divide-border/20">
+              {tiles.map((t, i) => (
+                <div key={i} className="px-4 py-3 hover:bg-background/30 transition-colors">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {t.label}
+                    </span>
+                    <t.icon className="w-3 h-3 text-muted-foreground/70" />
+                  </div>
+                  <div className="text-sm font-bold text-foreground truncate leading-tight">
+                    {t.value}
+                  </div>
+                  <div className="flex items-center justify-between mt-1.5 text-[9px]">
+                    <span className="text-muted-foreground/80 truncate">{t.context}</span>
+                    {t.status && (
+                      <span
+                        className="inline-flex items-center gap-1 font-bold uppercase tracking-wider shrink-0 ml-1"
+                        style={{ color: t.status.tone }}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ background: t.status.tone }}
+                        />
+                        {t.status.label}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           );
         })()}
-
-        {data.discordGuildId && (
-          <div className="px-5 py-3 border-t border-border/30 bg-background/20">
-            <a
-              href={`https://discord.gg/${data.discordGuildId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-xs text-[hsl(var(--green))] hover:underline font-medium"
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              Join Discord Server <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-        )}
       </div>
+
 
       {/* ============ ONLINE PLAYERS — FLAGSHIP ============ */}
       {(() => {
@@ -1113,36 +1323,39 @@ const ServerDetails = ({
 
 
 
-      {/* ============ SERVER RESOURCES ============ */}
+      {/* Resource Categories — primary visual grouping */}
+      <ResourceCategories resources={data.resources} />
+
+      {/* All resources (raw, searchable) — collapsible */}
       <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
         <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
-        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-border/30 bg-background/20">
+        <div className="flex items-center justify-between gap-3 px-5 py-2.5 border-b border-border/30 bg-background/20">
           <div className="flex items-center gap-2">
             <Download className="w-4 h-4 text-[hsl(var(--green))]" />
             <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
-              Server Resources
+              All Resources
             </h3>
-            <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3">
+            <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3 tabular-nums">
               {data.resources.length} loaded
             </span>
           </div>
-        </div>
-        <div className="p-4">
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <div className="relative w-56">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
             <Input
-              placeholder="Search resources..."
+              placeholder="Filter…"
               value={resourceSearch}
               onChange={(e) => setResourceSearch(e.target.value)}
-              className="pl-9 h-9 text-xs bg-background/40 border-border/40"
+              className="pl-7 h-7 text-[11px] bg-background/40 border-border/40"
             />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+        </div>
+        <div className="p-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
             {displayedResources.map((resource) => (
               <button
                 key={resource}
-                onClick={() => copyToClipboard(resource, "Resource")}
-                className="px-2.5 py-1.5 rounded-md bg-background/40 border border-border/30 hover:border-[hsl(var(--green))]/40 hover:bg-background/60 text-[11px] font-mono text-foreground/80 hover:text-foreground transition-colors text-left truncate"
+                onClick={() => copyToClipboard(resource, 'Resource')}
+                className="px-2 py-1 rounded bg-background/40 border border-border/30 hover:border-[hsl(var(--green))]/40 hover:bg-background/60 text-[10.5px] font-mono text-foreground/80 hover:text-foreground transition-colors text-left truncate"
               >
                 {resource}
               </button>
@@ -1163,10 +1376,6 @@ const ServerDetails = ({
         </div>
       </section>
 
-
-
-      {/* Resource Categories */}
-      <ResourceCategories resources={data.resources} />
 
       {/* Server Owner Card */}
       <ServerOwnerCard
