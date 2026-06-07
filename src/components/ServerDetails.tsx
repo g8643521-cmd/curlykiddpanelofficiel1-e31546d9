@@ -31,6 +31,8 @@ import {
   Layers,
   Building2,
   Link2,
+  Gamepad2,
+  Hash,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
