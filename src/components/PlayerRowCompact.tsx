@@ -74,6 +74,7 @@ interface Props {
   serverCode?: string;
   serverName?: string;
   onCheaterAdded?: () => void;
+  joinOrder?: { rank: number; total: number };
 }
 
 const parseIdentifiers = (identifiers: string[] = []): PlayerIdentifiers => {
