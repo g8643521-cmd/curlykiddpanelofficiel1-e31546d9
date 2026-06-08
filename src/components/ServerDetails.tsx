@@ -144,11 +144,6 @@ const ServerDetails = ({
   const detectedAntiCheats = useMemo(() => detectAllAntiCheats(data.resources), [data.resources]);
 
 
-  const filteredResources = data.resources.filter((r) =>
-    r.toLowerCase().includes(resourceSearch.toLowerCase())
-  );
-
-  const displayedResources = showAllResources ? filteredResources : filteredResources.slice(0, 18);
 
   const sortedPlayers = [...data.players]
     .filter((p) => p.name.toLowerCase().includes(playerSearch.toLowerCase()))
