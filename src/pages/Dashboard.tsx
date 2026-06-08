@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
 import { useI18n } from "@/lib/i18n";
 import UnifiedSearch from "@/components/UnifiedSearch";
@@ -17,6 +17,8 @@ import { usePresence } from "@/hooks/usePresence";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import { ErrorCard } from "@/components/feedback/ErrorCard";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
+
 // Lazy-load heavy components
 const CosmicNebulaBackground = lazy(() => import("@/components/CosmicNebulaBackground"));
 const ServerDetails = lazy(() => import("@/components/ServerDetails"));
@@ -29,6 +31,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
+  const { serverCode: urlServerCode } = useParams<{ serverCode: string }>();
   const { isLoading, serverData, error: lookupError, errorDetails: lookupErrorDetails, lastSearchedCode, fetchServerData, clearData } = useCfxApi();
   const { history, isLoading: historyLoading, refetch: refetchHistory, clearHistory, removeHistoryItem } = useSearchHistory();
   const {
@@ -51,6 +54,7 @@ const Dashboard = () => {
   const [currentServerLastUpdate, setCurrentServerLastUpdate] = useState<Date | null>(null);
   const [isRefreshingCurrent, setIsRefreshingCurrent] = useState(false);
   const searchSectionRef = useRef<HTMLDivElement>(null);
+  const hasFetchedFromUrl = useRef(false);
 
   const scrollToSearch = useCallback(() => {
     searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -60,7 +64,8 @@ const Dashboard = () => {
   const handleServerSelect = useCallback(async (serverCode: string) => {
     await fetchServerData(serverCode);
     await refetchHistory();
-  }, [fetchServerData, refetchHistory]);
+    navigate(`/dashboard/${serverCode}`, { replace: true });
+  }, [fetchServerData, refetchHistory, navigate]);
 
   const refreshCurrentServer = useCallback(async () => {
     if (!lastSearchedCode) return;
@@ -98,18 +103,48 @@ const Dashboard = () => {
   useEffect(() => {
     if (!isReady || !isAuthenticated) return;
 
-    const serverCode = searchParams.get('server');
+    const queryServerCode = searchParams.get('server');
     const showTour = searchParams.get('tour');
     
-    if (serverCode) {
-      fetchServerData(serverCode);
-    }
-    
-    if (serverCode || showTour) {
+    if (queryServerCode) {
+      fetchServerData(queryServerCode);
+      navigate(`/dashboard/${queryServerCode}`, { replace: true });
+    } else if (showTour) {
       navigate('/dashboard', { replace: true });
     }
   }, [searchParams, fetchServerData, navigate, isReady, isAuthenticated]);
 
+  // Auto-fetch server from URL param on direct navigation
+  useEffect(() => {
+    if (!isReady || !isAuthenticated) return;
+    if (!urlServerCode || hasFetchedFromUrl.current) return;
+    if (serverData || isLoading) return;
+    hasFetchedFromUrl.current = true;
+    fetchServerData(urlServerCode);
+  }, [urlServerCode, fetchServerData, isReady, isAuthenticated, serverData, isLoading]);
+
+  // Reset fetch flag when URL param changes
+  useEffect(() => {
+    hasFetchedFromUrl.current = false;
+  }, [urlServerCode]);
+
+  // Dynamic page meta when a server is loaded
+  const cleanHostname = serverData?.hostname
+    ? serverData.hostname.replace(/\^[0-9]/g, '').replace(/~[a-zA-Z]~/g, '').trim()
+    : null;
+  const pageTitle = serverData && lastSearchedCode && cleanHostname
+    ? `${cleanHostname} — cfx.re/join/${lastSearchedCode}`
+    : 'Dashboard — CurlyKiddPanel';
+  const pageDesc = serverData && lastSearchedCode
+    ? `${serverData.playerCount ?? serverData.players?.length ?? 0}/${serverData.maxPlayers} players · ${serverData.gametype || 'FiveM'} · cfx.re/join/${lastSearchedCode}`
+    : 'Your CurlyKiddPanel dashboard with FiveM server lookup, favorites, recent searches and the latest community mods.';
+  const pagePath = lastSearchedCode ? `/dashboard/${lastSearchedCode}` : '/dashboard';
+
+  usePageMeta({
+    title: pageTitle,
+    description: pageDesc,
+    path: pagePath,
+  });
 
   if (!isReady) {
     return (
