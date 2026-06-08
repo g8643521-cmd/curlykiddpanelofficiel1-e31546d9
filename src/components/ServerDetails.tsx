@@ -12,8 +12,6 @@ import {
   Tag,
   EyeOff,
   MessageCircle,
-  ChevronDown,
-  ChevronUp,
   ExternalLink,
   Star,
   RefreshCw,
@@ -21,7 +19,7 @@ import {
   AlertTriangle,
   Info,
   ShieldCheck,
-  Eye,
+  
   Lock,
   Unlock,
   Activity,
@@ -45,9 +43,8 @@ import NotificationSettingsDialog from "@/components/NotificationSettingsDialog"
 import PlayerRowCompact, { PLAYER_ROW_GRID } from "@/components/PlayerRowCompact";
 import CheaterWarningBanner from "@/components/CheaterWarningBanner";
 import SensitiveText from "@/components/SensitiveText";
-import ResourceCategories from "@/components/ResourceCategories";
 import ServerOwnerCard from "@/components/ServerOwnerCard";
-import ResourceInspector from "@/components/ResourceInspector";
+import ResourceExplorer from "@/components/ResourceExplorer";
 
 
 import { useAdminStatus } from "@/hooks/useAdminStatus";
@@ -94,12 +91,9 @@ const ServerDetails = ({
   isPolling,
   onRefresh,
 }: ServerDetailsProps) => {
-  const [resourceSearch, setResourceSearch] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [playerSort, setPlayerSort] = useState<"name" | "id" | "ping">("name");
-  const [showAllResources, setShowAllResources] = useState(false);
   const [bannerError, setBannerError] = useState(false);
-  const [showAllSideResources, setShowAllSideResources] = useState(false);
   const autoTrackingDone = useRef(false);
   const data = useMemo(
     () => ({
@@ -148,11 +142,6 @@ const ServerDetails = ({
   const detectedAntiCheats = useMemo(() => detectAllAntiCheats(data.resources), [data.resources]);
 
 
-  const filteredResources = data.resources.filter((r) =>
-    r.toLowerCase().includes(resourceSearch.toLowerCase())
-  );
-
-  const displayedResources = showAllResources ? filteredResources : filteredResources.slice(0, 18);
 
   const sortedPlayers = [...data.players]
     .filter((p) => p.name.toLowerCase().includes(playerSearch.toLowerCase()))
@@ -243,7 +232,7 @@ const ServerDetails = ({
       )}
 
       {/* Professional Hero + Side Details Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
+      <div className="grid grid-cols-1 gap-4 items-start">
         {/* LEFT: Compact intelligence card */}
         <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
           {/* Slim status accent strip */}
@@ -609,7 +598,7 @@ const ServerDetails = ({
             </Tooltip>
           </div>
 
-          {/* Secondary endpoint row */}
+          {/* Endpoint + integrated server metadata */}
           {data.ip && (
             <div className="px-5 py-2.5 border-t border-border/30 bg-background/20 flex items-center gap-3 flex-wrap">
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Endpoint</span>
@@ -624,335 +613,214 @@ const ServerDetails = ({
               </button>
             </div>
           )}
-        </div>
 
-        {/* RIGHT: Grouped intelligence sidebar */}
-        <aside className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm lg:sticky lg:top-4 h-fit overflow-hidden shadow-xl">
-          {/* Header */}
-          <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-border/40 bg-background/30">
-            <div className="flex items-center gap-2 min-w-0">
-              <Eye className="w-3.5 h-3.5 text-[hsl(var(--green))]" />
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-foreground">
-                Server Intelligence
-              </h3>
-            </div>
-            <span
-              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
-                data.private
-                  ? 'bg-[hsl(var(--red))]/10 text-[hsl(var(--red))] border-[hsl(var(--red))]/25'
-                  : 'bg-[hsl(var(--green))]/10 text-[hsl(var(--green))] border-[hsl(var(--green))]/25'
-              }`}
-            >
-              {data.private ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5" />}
-              {data.private ? 'Private' : 'Public'}
-            </span>
-          </div>
-
+          {/* Server Metadata — compact KPI/badge row replacing the old sidebar */}
           {(() => {
-            type Row = {
+            type Kpi = {
               label: string;
               value: React.ReactNode;
-              icon?: React.ComponentType<{ className?: string }>;
-              mono?: boolean;
-              copy?: string;
-              href?: string;
-              tone?: string;
-            };
-            const SectionRow = ({ row }: { row: Row }) => {
-              const Icon = row.icon;
-              const inner = (
-                <span
-                  className={`text-[11px] font-medium text-right truncate max-w-[170px] ${row.mono ? 'font-mono' : ''}`}
-                  style={row.tone ? { color: row.tone } : undefined}
-                >
-                  {row.value}
-                </span>
-              );
-              return (
-                <div className="group flex items-center justify-between gap-2 px-4 py-1.5 hover:bg-background/30 transition-colors">
-                  <span className="inline-flex items-center gap-1.5 text-muted-foreground text-[9.5px] uppercase tracking-wider">
-                    {Icon && <Icon className="w-3 h-3" />}
-                    {row.label}
-                  </span>
-                  <div className="flex items-center gap-1 min-w-0">
-                    {row.href ? (
-                      <a
-                        href={row.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[hsl(var(--green))] hover:underline"
-                      >
-                        {inner}
-                        <ExternalLink className="w-2.5 h-2.5 text-muted-foreground" />
-                      </a>
-                    ) : (
-                      <span className="text-foreground">{inner}</span>
-                    )}
-                    {row.copy && (
-                      <button
-                        onClick={() => copyToClipboard(row.copy!, row.label)}
-                        className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            };
-
-            const Section = ({
-              title,
-              icon: Icon,
-              rows,
-              accent = 'hsl(var(--green))',
-            }: {
-              title: string;
               icon: React.ComponentType<{ className?: string }>;
-              rows: Row[];
-              accent?: string;
-            }) => {
-              if (rows.length === 0) return null;
-              return (
-                <section className="border-b border-border/30 last:border-b-0">
-                  <div className="flex items-center justify-between px-4 py-2 bg-background/20">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-1 h-3 rounded-sm" style={{ background: accent }} />
-                      <Icon className="w-3 h-3 text-muted-foreground" />
-                      <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-foreground/90">
-                        {title}
-                      </h4>
-                    </div>
-                    <span className="text-[9px] font-mono text-muted-foreground/60 tabular-nums">
-                      {rows.length}
-                    </span>
-                  </div>
-                  <div className="divide-y divide-border/20">
-                    {rows.map((r, i) => (
-                      <SectionRow key={i} row={r} />
-                    ))}
-                  </div>
-                </section>
-              );
+              tone?: string;
+              hint?: string;
+              href?: string;
+              copy?: string;
+              mono?: boolean;
             };
-
-            // ---- CONNECTION ----
-            const connection: Row[] = [];
-            if (serverCode)
-              connection.push({
-                label: 'CFX URL',
-                value: `cfx.re/join/${serverCode}`,
-                icon: Link2,
-                mono: true,
-                copy: `cfx.re/join/${serverCode}`,
-              });
-            if (data.ip && data.port)
-              connection.push({
-                label: 'Endpoint',
-                value: `${data.ip}:${data.port}`,
-                icon: Globe,
-                mono: true,
-                copy: `${data.ip}:${data.port}`,
-              });
-            connection.push({
-              label: 'Access',
-              value: data.private ? 'Private / Whitelist' : 'Public',
-              icon: data.private ? Lock : Unlock,
-              tone: data.private ? 'hsl(var(--red))' : 'hsl(var(--green))',
-            });
-            connection.push({
-              label: 'Population',
-              value: (
-                <>
-                  {effectivePlayerCount}
-                  <span className="text-muted-foreground">/{data.maxPlayers || '—'}</span>
-                  <span className="text-muted-foreground ml-1">({playerPercentage.toFixed(0)}%)</span>
-                </>
-              ),
-              icon: Users,
+            const kpis: Kpi[] = [];
+            kpis.push({
+              label: "Resources",
+              value: data.resources.length,
+              icon: Download,
+              hint: "loaded",
               mono: true,
             });
-            if (avgPing > 0)
-              connection.push({
-                label: 'Network',
-                value: (
-                  <>
-                    {avgPing}ms <span className="text-muted-foreground">({pingMin}–{pingMax})</span>
-                  </>
-                ),
-                icon: Signal,
-                mono: true,
-                tone: pingTone,
-              });
-
-            // ---- SERVER ----
-            const server: Row[] = [];
-            if (data.projectName)
-              server.push({
-                label: 'Project',
-                value: stripColorCodes(data.projectName),
-                icon: Layers,
-              });
-            if (data.locale)
-              server.push({ label: 'Locale', value: data.locale.toUpperCase(), icon: Languages, mono: true });
-            if (data.gametype)
-              server.push({ label: 'Game Type', value: data.gametype, icon: Gamepad2 });
-            if (data.mapname)
-              server.push({ label: 'Map', value: data.mapname, icon: MapPin });
-            if (data.premiumTier)
-              server.push({
-                label: 'Premium',
-                value: <span className="capitalize">{data.premiumTier}</span>,
-                icon: Star,
-                tone: 'hsl(var(--yellow))',
-              });
-            if (data.tags && parseTags(data.tags).length)
-              server.push({
-                label: 'Tags',
-                value: `${parseTags(data.tags).length} tags`,
+            if (data.tags) {
+              kpis.push({
+                label: "Tags",
+                value: parseTags(data.tags).length,
                 icon: Tag,
+                hint: "categories",
                 mono: true,
               });
-
-            // ---- RUNTIME ----
-            const runtime: Row[] = [];
-            runtime.push({
-              label: 'Game Build',
-              value: data.enforceGameBuild ? `b${data.enforceGameBuild}` : 'Default',
+            }
+            if (data.locale)
+              kpis.push({ label: "Locale", value: data.locale.toUpperCase(), icon: Languages, mono: true });
+            if (data.gametype)
+              kpis.push({ label: "Game Type", value: data.gametype, icon: Gamepad2 });
+            if (data.mapname)
+              kpis.push({ label: "Map", value: data.mapname, icon: MapPin });
+            kpis.push({
+              label: "OneSync",
+              value: data.onesyncEnabled ? "Enabled" : "Off",
+              icon: Layers,
+              tone: data.onesyncEnabled ? "hsl(var(--green))" : "hsl(var(--muted-foreground))",
+            });
+            kpis.push({
+              label: "Script Hook",
+              value: data.scriptHookAllowed ? "Allowed" : "Blocked",
+              icon: ShieldCheck,
+              tone: data.scriptHookAllowed ? "hsl(var(--orange))" : "hsl(var(--green))",
+            });
+            if (data.pureLevel)
+              kpis.push({ label: "Pure", value: `Lv ${data.pureLevel}`, icon: ShieldCheck, mono: true });
+            kpis.push({
+              label: "Build",
+              value: data.enforceGameBuild ? `b${data.enforceGameBuild}` : "Default",
               icon: Hash,
               mono: true,
             });
-            runtime.push({
-              label: 'OneSync',
-              value: data.onesyncEnabled ? 'Enabled' : 'Disabled',
-              icon: Layers,
-              tone: data.onesyncEnabled ? 'hsl(var(--green))' : 'hsl(var(--muted-foreground))',
-            });
-            runtime.push({
-              label: 'Script Hook',
-              value: data.scriptHookAllowed ? 'Allowed' : 'Blocked',
-              icon: ShieldCheck,
-              tone: data.scriptHookAllowed ? 'hsl(var(--orange))' : 'hsl(var(--green))',
-            });
-            if (data.pureLevel)
-              runtime.push({ label: 'Pure Level', value: data.pureLevel, icon: ShieldCheck, mono: true });
-            if (data.enhancedHostSupport !== undefined)
-              runtime.push({
-                label: 'Enhanced Host',
-                value: data.enhancedHostSupport ? 'Yes' : 'No',
-                icon: Server,
-                tone: data.enhancedHostSupport
-                  ? 'hsl(var(--green))'
-                  : 'hsl(var(--muted-foreground))',
+            if (data.premiumTier)
+              kpis.push({
+                label: "Premium",
+                value: <span className="capitalize">{data.premiumTier}</span>,
+                icon: Star,
+                tone: "hsl(var(--yellow))",
               });
-            runtime.push({
-              label: 'Resources',
-              value: `${data.resources.length} loaded`,
-              icon: Download,
+            if (detectedAntiCheats.length > 0)
+              kpis.push({
+                label: "Anti-Cheat",
+                value: detectedAntiCheats.map((a) => a.name).join(" · "),
+                icon: ShieldCheck,
+                tone: "hsl(var(--green))",
+              });
+            kpis.push({
+              label: "Population",
+              value: `${effectivePlayerCount}/${data.maxPlayers || "—"}`,
+              icon: Users,
+              hint: `${playerPercentage.toFixed(0)}%`,
               mono: true,
             });
-            if (detectedAntiCheats.length > 0)
-              runtime.push({
-                label: 'Anti-Cheat',
-                value: detectedAntiCheats.map((a) => a.name).join(', '),
-                icon: ShieldCheck,
-                tone: 'hsl(var(--green))',
+            if (avgPing > 0)
+              kpis.push({
+                label: "Avg Ping",
+                value: `${avgPing}ms`,
+                icon: Signal,
+                hint: `${pingMin}–${pingMax}`,
+                tone: pingTone,
+                mono: true,
               });
-            if (data.txAdmin)
-              runtime.push({ label: 'txAdmin', value: data.txAdmin, icon: Activity, mono: true });
-
-            // ---- DEVELOPER ----
-            const developer: Row[] = [];
+            kpis.push({
+              label: "Access",
+              value: data.private ? "Private" : "Public",
+              icon: data.private ? Lock : Unlock,
+              tone: data.private ? "hsl(var(--red))" : "hsl(var(--green))",
+            });
             if (data.ownerName)
-              developer.push({
-                label: 'Developer',
+              kpis.push({
+                label: "Developer",
                 value: data.ownerName,
                 icon: Building2,
                 href: data.ownerProfile || undefined,
               });
             if (data.discordGuildId)
-              developer.push({
-                label: 'Discord',
+              kpis.push({
+                label: "Discord",
                 value: `discord.gg/${data.discordGuildId}`,
                 icon: MessageCircle,
                 href: `https://discord.gg/${data.discordGuildId}`,
                 mono: true,
               });
             if (website)
-              developer.push({
-                label: 'Website',
-                value: website.replace(/^https?:\/\//, ''),
+              kpis.push({
+                label: "Website",
+                value: website.replace(/^https?:\/\//, ""),
                 icon: Globe,
-                href: website.startsWith('http') ? website : `https://${website}`,
+                href: website.startsWith("http") ? website : `https://${website}`,
                 mono: true,
               });
+            if (data.txAdmin)
+              kpis.push({ label: "txAdmin", value: data.txAdmin, icon: Activity, mono: true });
             if (data.upvotePower && data.upvotePower > 0)
-              developer.push({
-                label: 'Upvote Power',
+              kpis.push({
+                label: "Upvotes",
                 value: data.upvotePower.toLocaleString(),
                 icon: Star,
                 mono: true,
-                tone: 'hsl(var(--yellow))',
+                tone: "hsl(var(--yellow))",
               });
             if (data.burstPower && data.burstPower > 0)
-              developer.push({
-                label: 'Burst Power',
+              kpis.push({
+                label: "Burst",
                 value: data.burstPower.toLocaleString(),
                 icon: Activity,
                 mono: true,
-                tone: 'hsl(var(--orange))',
-              });
-            if (data.supportStatus)
-              developer.push({
-                label: 'Support',
-                value: <span className="capitalize">{data.supportStatus}</span>,
-                icon: ShieldCheck,
+                tone: "hsl(var(--orange))",
               });
 
             return (
-              <>
-                <Section title="Connection" icon={Link2} rows={connection} accent="hsl(var(--green))" />
-                <Section title="Server" icon={Server} rows={server} accent="hsl(var(--cyan, var(--green)))" />
-                <Section title="Runtime" icon={Activity} rows={runtime} accent="hsl(var(--yellow))" />
-                <Section title="Developer" icon={Building2} rows={developer} accent="hsl(var(--orange))" />
-              </>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 border-t border-border/30 divide-x divide-y divide-border/20">
+                {kpis.map((k, i) => {
+                  const Icon = k.icon;
+                  const valueEl = (
+                    <span
+                      className={`text-[12px] font-semibold text-foreground truncate ${k.mono ? "font-mono" : ""}`}
+                      style={k.tone ? { color: k.tone } : undefined}
+                    >
+                      {k.value}
+                    </span>
+                  );
+                  return (
+                    <div
+                      key={i}
+                      className="group px-3 py-2 hover:bg-background/30 transition-colors min-w-0"
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-0.5">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                          <Icon className="w-2.5 h-2.5" />
+                          {k.label}
+                        </span>
+                        {k.hint && (
+                          <span className="text-[9px] font-mono text-muted-foreground/70 tabular-nums">
+                            {k.hint}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 min-w-0">
+                        {k.href ? (
+                          <a
+                            href={k.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 min-w-0 hover:text-[hsl(var(--green))] transition-colors"
+                          >
+                            {valueEl}
+                            <ExternalLink className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
+                          </a>
+                        ) : (
+                          valueEl
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             );
           })()}
 
-          {/* Footer: tags chip cluster (compact, real data) */}
+          {/* Tags chip cluster — when present */}
           {data.tags && parseTags(data.tags).length > 0 && (
-            <div className="px-4 py-3 border-t border-border/40 bg-background/20">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Tag className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                  Tags
+            <div className="px-5 py-2.5 border-t border-border/30 bg-background/10 flex items-center gap-2 flex-wrap">
+              <Tag className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mr-1">
+                Tags
+              </span>
+              {parseTags(data.tags).slice(0, 20).map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="px-1.5 py-0.5 rounded bg-secondary/60 border border-border/30 text-[10px] text-foreground/75"
+                >
+                  {tag}
                 </span>
-                <span className="text-[9px] font-mono text-muted-foreground/60 ml-auto tabular-nums">
-                  {parseTags(data.tags).length}
+              ))}
+              {parseTags(data.tags).length > 20 && (
+                <span className="text-[10px] text-muted-foreground">
+                  +{parseTags(data.tags).length - 20} more
                 </span>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {parseTags(data.tags).map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="px-1.5 py-0.5 rounded bg-secondary/60 border border-border/30 text-[9px] text-foreground/75"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              )}
             </div>
           )}
+        </div>
 
-          {/* Report */}
-          <button
-            onClick={() => toast.info('Report submitted for review')}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-[hsl(var(--red))] border-t border-border/40 bg-background/10 transition-colors"
-          >
-            <AlertTriangle className="w-3 h-3" />
-            Report Server
-          </button>
-        </aside>
       </div>
 
 
@@ -1323,59 +1191,10 @@ const ServerDetails = ({
 
 
 
-      {/* Resource Categories — primary visual grouping */}
-      <ResourceCategories resources={data.resources} />
-
-      {/* All resources (raw, searchable) — collapsible */}
-      <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
-        <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
-        <div className="flex items-center justify-between gap-3 px-5 py-2.5 border-b border-border/30 bg-background/20">
-          <div className="flex items-center gap-2">
-            <Download className="w-4 h-4 text-[hsl(var(--green))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
-              All Resources
-            </h3>
-            <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3 tabular-nums">
-              {data.resources.length} loaded
-            </span>
-          </div>
-          <div className="relative w-56">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-            <Input
-              placeholder="Filter…"
-              value={resourceSearch}
-              onChange={(e) => setResourceSearch(e.target.value)}
-              className="pl-7 h-7 text-[11px] bg-background/40 border-border/40"
-            />
-          </div>
-        </div>
-        <div className="p-3">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
-            {displayedResources.map((resource) => (
-              <button
-                key={resource}
-                onClick={() => copyToClipboard(resource, 'Resource')}
-                className="px-2 py-1 rounded bg-background/40 border border-border/30 hover:border-[hsl(var(--green))]/40 hover:bg-background/60 text-[10.5px] font-mono text-foreground/80 hover:text-foreground transition-colors text-left truncate"
-              >
-                {resource}
-              </button>
-            ))}
-          </div>
-          {filteredResources.length > 18 && (
-            <button
-              onClick={() => setShowAllResources(!showAllResources)}
-              className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-[hsl(var(--green))] mx-auto transition-colors"
-            >
-              {showAllResources ? (
-                <>Show less <ChevronUp className="w-3.5 h-3.5" /></>
-              ) : (
-                <>Show all {filteredResources.length} <ChevronDown className="w-3.5 h-3.5" /></>
-              )}
-            </button>
-          )}
-        </div>
-      </section>
-
+      {/* Unified Resource Explorer */}
+      {data.resources && data.resources.length > 0 && (
+        <ResourceExplorer resources={data.resources} />
+      )}
 
       {/* Server Owner Card */}
       <ServerOwnerCard
@@ -1413,11 +1232,6 @@ const ServerDetails = ({
             ))}
           </div>
         </section>
-      )}
-
-      {/* Resource Inspector */}
-      {data.resources && data.resources.length > 0 && (
-        <ResourceInspector resources={data.resources} />
       )}
 
 

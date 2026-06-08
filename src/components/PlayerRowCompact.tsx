@@ -33,7 +33,7 @@ import {
 import { toast } from "sonner";
 import AddCheaterDialog from "./AddCheaterDialog";
 import PlayerNotesDialog from "./PlayerNotesDialog";
-import PlayerHoverCard from "./PlayerHoverCard";
+import PlayerDetailSheet from "./PlayerDetailSheet";
 import SensitiveText from "./SensitiveText";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useStreamerMode } from "@/hooks/useStreamerMode";
@@ -142,6 +142,7 @@ const PlayerRowCompact = ({
   const [expanded, setExpanded] = useState(false);
   const [showCheaterDialog, setShowCheaterDialog] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const { isAdmin } = useAdminStatus();
   const { isEnabled: streamerMode } = useStreamerMode();
 
@@ -199,93 +200,79 @@ const PlayerRowCompact = ({
               </div>
 
               {/* Name + avatar (hover card trigger) */}
-              <PlayerHoverCard player={player} joinOrder={joinOrder}>
-                <div className="flex items-center gap-2.5 min-w-0 cursor-default">
-                  <div className="relative shrink-0">
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt=""
-                        className="w-7 h-7 rounded-md object-cover border border-border/50"
-                        onError={() => setAvatarError(true)}
-                      />
-                    ) : (
-                      <div className="w-7 h-7 rounded-md bg-secondary/70 border border-border/50 flex items-center justify-center">
-                        <Users className="w-3.5 h-3.5 text-muted-foreground" />
-                      </div>
+              <button
+                onClick={() => setShowDetail(true)}
+                className="flex items-center gap-2.5 min-w-0 text-left cursor-pointer hover:opacity-90 transition-opacity"
+              >
+                <div className="relative shrink-0">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt=""
+                      className="w-7 h-7 rounded-md object-cover border border-border/50"
+                      onError={() => setAvatarError(true)}
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-md bg-secondary/70 border border-border/50 flex items-center justify-center">
+                      <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[hsl(var(--green))] ring-2 ring-card" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-foreground truncate group-hover:text-[hsl(var(--green))] transition-colors">
+                      <Highlight text={player.name} query={searchQuery} />
+                    </span>
+                    {isCheater && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                              cheaterReport!.status === "confirmed"
+                                ? "bg-[hsl(var(--red))]/15 text-[hsl(var(--red))]"
+                                : "bg-[hsl(var(--yellow))]/15 text-[hsl(var(--yellow))]"
+                            }`}
+                          >
+                            <AlertTriangle className="w-2.5 h-2.5" />
+                            {cheaterReport!.status === "confirmed" ? "Cheater" : "Suspect"}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>{cheaterReport!.reason}</TooltipContent>
+                      </Tooltip>
                     )}
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[hsl(var(--green))] ring-2 ring-card" />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-medium text-foreground truncate">
-                        <Highlight text={player.name} query={searchQuery} />
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[10px] font-mono text-muted-foreground/80">#{player.id}</span>
+                    {joinOrder && (
+                      <span className="text-[9px] font-mono text-muted-foreground/70 tabular-nums">
+                        · slot {joinOrder.rank}/{joinOrder.total}
                       </span>
-                      {isCheater && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span
-                              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                                cheaterReport!.status === "confirmed"
-                                  ? "bg-[hsl(var(--red))]/15 text-[hsl(var(--red))]"
-                                  : "bg-[hsl(var(--yellow))]/15 text-[hsl(var(--yellow))]"
-                              }`}
-                            >
-                              <AlertTriangle className="w-2.5 h-2.5" />
-                              {cheaterReport!.status === "confirmed" ? "Cheater" : "Suspect"}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>{cheaterReport!.reason}</TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] font-mono text-muted-foreground/80">#{player.id}</span>
-                      {joinOrder && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-[9px] font-mono text-muted-foreground/70 tabular-nums">
-                              · slot {joinOrder.rank}/{joinOrder.total}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>Server slot order (by player.id)</TooltipContent>
-                        </Tooltip>
-                      )}
-                      {/* Identifier presence dots — real data only */}
-                      {(player.identifiers || []).length > 0 && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-flex items-center gap-0.5 ml-0.5">
-                              {[
-                                { k: "Steam", on: !!identifiers.steam, c: "hsl(var(--green))" },
-                                { k: "Discord", on: !!identifiers.discord, c: "#5865F2" },
-                                { k: "Rockstar", on: !!identifiers.license, c: "hsl(var(--orange))" },
-                                { k: "FiveM", on: !!identifiers.fivem, c: "hsl(var(--yellow))" },
-                                { k: "Xbox", on: !!identifiers.xbl || !!identifiers.live, c: "hsl(var(--green))" },
-                              ].map((d) => (
-                                <span
-                                  key={d.k}
-                                  title={`${d.k}: ${d.on ? "yes" : "no"}`}
-                                  className="w-1.5 h-1.5 rounded-full"
-                                  style={{
-                                    background: d.on ? d.c : "hsl(var(--muted-foreground) / 0.25)",
-                                  }}
-                                />
-                              ))}
-                              <span className="text-[9px] font-mono text-muted-foreground/70 ml-1 tabular-nums">
-                                {(player.identifiers || []).length}
-                              </span>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            Identifiers present: Steam · Discord · Rockstar · FiveM · Xbox/Live
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
+                    )}
+                    {(player.identifiers || []).length > 0 && (
+                      <span className="inline-flex items-center gap-0.5 ml-0.5">
+                        {[
+                          { k: "Steam", on: !!identifiers.steam, c: "hsl(var(--green))" },
+                          { k: "Discord", on: !!identifiers.discord, c: "#5865F2" },
+                          { k: "Rockstar", on: !!identifiers.license, c: "hsl(var(--orange))" },
+                          { k: "FiveM", on: !!identifiers.fivem, c: "hsl(var(--yellow))" },
+                          { k: "Xbox", on: !!identifiers.xbl || !!identifiers.live, c: "hsl(var(--green))" },
+                        ].map((d) => (
+                          <span
+                            key={d.k}
+                            title={`${d.k}: ${d.on ? "yes" : "no"}`}
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ background: d.on ? d.c : "hsl(var(--muted-foreground) / 0.25)" }}
+                          />
+                        ))}
+                        <span className="text-[9px] font-mono text-muted-foreground/70 ml-1 tabular-nums">
+                          {(player.identifiers || []).length}
+                        </span>
+                      </span>
+                    )}
                   </div>
                 </div>
-              </PlayerHoverCard>
+              </button>
 
               {/* Steam */}
               <div className="truncate">
@@ -573,6 +560,14 @@ const PlayerRowCompact = ({
         playerIdentifiers={identifiers}
         serverCode={serverCode}
         serverName={serverName}
+      />
+      <PlayerDetailSheet
+        open={showDetail}
+        onOpenChange={setShowDetail}
+        player={player}
+        joinOrder={joinOrder}
+        cheaterReason={cheaterReport?.reason}
+        cheaterStatus={cheaterReport?.status}
       />
     </>
   );
