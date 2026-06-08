@@ -31,6 +31,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
+  const { serverCode: urlServerCode } = useParams<{ serverCode: string }>();
   const { isLoading, serverData, error: lookupError, errorDetails: lookupErrorDetails, lastSearchedCode, fetchServerData, clearData } = useCfxApi();
   const { history, isLoading: historyLoading, refetch: refetchHistory, clearHistory, removeHistoryItem } = useSearchHistory();
   const {
@@ -53,6 +54,7 @@ const Dashboard = () => {
   const [currentServerLastUpdate, setCurrentServerLastUpdate] = useState<Date | null>(null);
   const [isRefreshingCurrent, setIsRefreshingCurrent] = useState(false);
   const searchSectionRef = useRef<HTMLDivElement>(null);
+  const hasFetchedFromUrl = useRef(false);
 
   const scrollToSearch = useCallback(() => {
     searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
