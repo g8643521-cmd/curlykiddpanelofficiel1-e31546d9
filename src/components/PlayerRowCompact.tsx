@@ -561,6 +561,14 @@ const PlayerRowCompact = ({
         serverCode={serverCode}
         serverName={serverName}
       />
+      <PlayerDetailSheet
+        open={showDetail}
+        onOpenChange={setShowDetail}
+        player={player}
+        joinOrder={joinOrder}
+        cheaterReason={cheaterReport?.reason}
+        cheaterStatus={cheaterReport?.status}
+      />
     </>
   );
 };
