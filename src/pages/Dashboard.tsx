@@ -103,14 +103,13 @@ const Dashboard = () => {
   useEffect(() => {
     if (!isReady || !isAuthenticated) return;
 
-    const serverCode = searchParams.get('server');
+    const queryServerCode = searchParams.get('server');
     const showTour = searchParams.get('tour');
     
-    if (serverCode) {
-      fetchServerData(serverCode);
-    }
-    
-    if (serverCode || showTour) {
+    if (queryServerCode) {
+      fetchServerData(queryServerCode);
+      navigate(`/dashboard/${queryServerCode}`, { replace: true });
+    } else if (showTour) {
       navigate('/dashboard', { replace: true });
     }
   }, [searchParams, fetchServerData, navigate, isReady, isAuthenticated]);
