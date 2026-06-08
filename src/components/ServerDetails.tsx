@@ -12,8 +12,6 @@ import {
   Tag,
   EyeOff,
   MessageCircle,
-  ChevronDown,
-  ChevronUp,
   ExternalLink,
   Star,
   RefreshCw,
