@@ -608,7 +608,7 @@ const ServerDetails = ({
             </Tooltip>
           </div>
 
-          {/* Secondary endpoint row */}
+          {/* Endpoint + integrated server metadata */}
           {data.ip && (
             <div className="px-5 py-2.5 border-t border-border/30 bg-background/20 flex items-center gap-3 flex-wrap">
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Endpoint</span>
@@ -621,6 +621,212 @@ const ServerDetails = ({
                 </SensitiveText>
                 <Copy className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
               </button>
+            </div>
+          )}
+
+          {/* Server Metadata — compact KPI/badge row replacing the old sidebar */}
+          {(() => {
+            type Kpi = {
+              label: string;
+              value: React.ReactNode;
+              icon: React.ComponentType<{ className?: string }>;
+              tone?: string;
+              hint?: string;
+              href?: string;
+              copy?: string;
+              mono?: boolean;
+            };
+            const kpis: Kpi[] = [];
+            kpis.push({
+              label: "Resources",
+              value: data.resources.length,
+              icon: Download,
+              hint: "loaded",
+              mono: true,
+            });
+            if (data.tags) {
+              kpis.push({
+                label: "Tags",
+                value: parseTags(data.tags).length,
+                icon: Tag,
+                hint: "categories",
+                mono: true,
+              });
+            }
+            if (data.locale)
+              kpis.push({ label: "Locale", value: data.locale.toUpperCase(), icon: Languages, mono: true });
+            if (data.gametype)
+              kpis.push({ label: "Game Type", value: data.gametype, icon: Gamepad2 });
+            if (data.mapname)
+              kpis.push({ label: "Map", value: data.mapname, icon: MapPin });
+            kpis.push({
+              label: "OneSync",
+              value: data.onesyncEnabled ? "Enabled" : "Off",
+              icon: Layers,
+              tone: data.onesyncEnabled ? "hsl(var(--green))" : "hsl(var(--muted-foreground))",
+            });
+            kpis.push({
+              label: "Script Hook",
+              value: data.scriptHookAllowed ? "Allowed" : "Blocked",
+              icon: ShieldCheck,
+              tone: data.scriptHookAllowed ? "hsl(var(--orange))" : "hsl(var(--green))",
+            });
+            if (data.pureLevel)
+              kpis.push({ label: "Pure", value: `Lv ${data.pureLevel}`, icon: ShieldCheck, mono: true });
+            kpis.push({
+              label: "Build",
+              value: data.enforceGameBuild ? `b${data.enforceGameBuild}` : "Default",
+              icon: Hash,
+              mono: true,
+            });
+            if (data.premiumTier)
+              kpis.push({
+                label: "Premium",
+                value: <span className="capitalize">{data.premiumTier}</span>,
+                icon: Star,
+                tone: "hsl(var(--yellow))",
+              });
+            if (detectedAntiCheats.length > 0)
+              kpis.push({
+                label: "Anti-Cheat",
+                value: detectedAntiCheats.map((a) => a.name).join(" · "),
+                icon: ShieldCheck,
+                tone: "hsl(var(--green))",
+              });
+            kpis.push({
+              label: "Population",
+              value: `${effectivePlayerCount}/${data.maxPlayers || "—"}`,
+              icon: Users,
+              hint: `${playerPercentage.toFixed(0)}%`,
+              mono: true,
+            });
+            if (avgPing > 0)
+              kpis.push({
+                label: "Avg Ping",
+                value: `${avgPing}ms`,
+                icon: Signal,
+                hint: `${pingMin}–${pingMax}`,
+                tone: pingTone,
+                mono: true,
+              });
+            kpis.push({
+              label: "Access",
+              value: data.private ? "Private" : "Public",
+              icon: data.private ? Lock : Unlock,
+              tone: data.private ? "hsl(var(--red))" : "hsl(var(--green))",
+            });
+            if (data.ownerName)
+              kpis.push({
+                label: "Developer",
+                value: data.ownerName,
+                icon: Building2,
+                href: data.ownerProfile || undefined,
+              });
+            if (data.discordGuildId)
+              kpis.push({
+                label: "Discord",
+                value: `discord.gg/${data.discordGuildId}`,
+                icon: MessageCircle,
+                href: `https://discord.gg/${data.discordGuildId}`,
+                mono: true,
+              });
+            if (website)
+              kpis.push({
+                label: "Website",
+                value: website.replace(/^https?:\/\//, ""),
+                icon: Globe,
+                href: website.startsWith("http") ? website : `https://${website}`,
+                mono: true,
+              });
+            if (data.txAdmin)
+              kpis.push({ label: "txAdmin", value: data.txAdmin, icon: Activity, mono: true });
+            if (data.upvotePower && data.upvotePower > 0)
+              kpis.push({
+                label: "Upvotes",
+                value: data.upvotePower.toLocaleString(),
+                icon: Star,
+                mono: true,
+                tone: "hsl(var(--yellow))",
+              });
+            if (data.burstPower && data.burstPower > 0)
+              kpis.push({
+                label: "Burst",
+                value: data.burstPower.toLocaleString(),
+                icon: Activity,
+                mono: true,
+                tone: "hsl(var(--orange))",
+              });
+
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 border-t border-border/30 divide-x divide-y divide-border/20">
+                {kpis.map((k, i) => {
+                  const Icon = k.icon;
+                  const valueEl = (
+                    <span
+                      className={`text-[12px] font-semibold text-foreground truncate ${k.mono ? "font-mono" : ""}`}
+                      style={k.tone ? { color: k.tone } : undefined}
+                    >
+                      {k.value}
+                    </span>
+                  );
+                  return (
+                    <div
+                      key={i}
+                      className="group px-3 py-2 hover:bg-background/30 transition-colors min-w-0"
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-0.5">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                          <Icon className="w-2.5 h-2.5" />
+                          {k.label}
+                        </span>
+                        {k.hint && (
+                          <span className="text-[9px] font-mono text-muted-foreground/70 tabular-nums">
+                            {k.hint}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 min-w-0">
+                        {k.href ? (
+                          <a
+                            href={k.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 min-w-0 hover:text-[hsl(var(--green))] transition-colors"
+                          >
+                            {valueEl}
+                            <ExternalLink className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
+                          </a>
+                        ) : (
+                          valueEl
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {/* Tags chip cluster — when present */}
+          {data.tags && parseTags(data.tags).length > 0 && (
+            <div className="px-5 py-2.5 border-t border-border/30 bg-background/10 flex items-center gap-2 flex-wrap">
+              <Tag className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mr-1">
+                Tags
+              </span>
+              {parseTags(data.tags).slice(0, 20).map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="px-1.5 py-0.5 rounded bg-secondary/60 border border-border/30 text-[10px] text-foreground/75"
+                >
+                  {tag}
+                </span>
+              ))}
+              {parseTags(data.tags).length > 20 && (
+                <span className="text-[10px] text-muted-foreground">
+                  +{parseTags(data.tags).length - 20} more
+                </span>
+              )}
             </div>
           )}
         </div>
