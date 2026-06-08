@@ -242,7 +242,7 @@ const ServerDetails = ({
       )}
 
       {/* Professional Hero + Side Details Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
+      <div className="grid grid-cols-1 gap-4 items-start">
         {/* LEFT: Compact intelligence card */}
         <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
           {/* Slim status accent strip */}
