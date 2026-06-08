@@ -114,6 +114,37 @@ const Dashboard = () => {
     }
   }, [searchParams, fetchServerData, navigate, isReady, isAuthenticated]);
 
+  // Auto-fetch server from URL param on direct navigation
+  useEffect(() => {
+    if (!isReady || !isAuthenticated) return;
+    if (!urlServerCode || hasFetchedFromUrl.current) return;
+    if (serverData || isLoading) return;
+    hasFetchedFromUrl.current = true;
+    fetchServerData(urlServerCode);
+  }, [urlServerCode, fetchServerData, isReady, isAuthenticated, serverData, isLoading]);
+
+  // Reset fetch flag when URL param changes
+  useEffect(() => {
+    hasFetchedFromUrl.current = false;
+  }, [urlServerCode]);
+
+  // Dynamic page meta when a server is loaded
+  const cleanHostname = serverData?.hostname
+    ? serverData.hostname.replace(/\^[0-9]/g, '').replace(/~[a-zA-Z]~/g, '').trim()
+    : null;
+  const pageTitle = serverData && lastSearchedCode && cleanHostname
+    ? `${cleanHostname} — cfx.re/join/${lastSearchedCode}`
+    : 'Dashboard — CurlyKiddPanel';
+  const pageDesc = serverData && lastSearchedCode
+    ? `${serverData.playerCount ?? serverData.players?.length ?? 0}/${serverData.maxPlayers} players · ${serverData.gametype || 'FiveM'} · cfx.re/join/${lastSearchedCode}`
+    : 'Your CurlyKiddPanel dashboard with FiveM server lookup, favorites, recent searches and the latest community mods.';
+  const pagePath = lastSearchedCode ? `/dashboard/${lastSearchedCode}` : '/dashboard';
+
+  usePageMeta({
+    title: pageTitle,
+    description: pageDesc,
+    path: pagePath,
+  });
 
   if (!isReady) {
     return (
