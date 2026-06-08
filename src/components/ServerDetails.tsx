@@ -1201,59 +1201,10 @@ const ServerDetails = ({
 
 
 
-      {/* Resource Categories — primary visual grouping */}
-      <ResourceCategories resources={data.resources} />
-
-      {/* All resources (raw, searchable) — collapsible */}
-      <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
-        <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
-        <div className="flex items-center justify-between gap-3 px-5 py-2.5 border-b border-border/30 bg-background/20">
-          <div className="flex items-center gap-2">
-            <Download className="w-4 h-4 text-[hsl(var(--green))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
-              All Resources
-            </h3>
-            <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3 tabular-nums">
-              {data.resources.length} loaded
-            </span>
-          </div>
-          <div className="relative w-56">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-            <Input
-              placeholder="Filter…"
-              value={resourceSearch}
-              onChange={(e) => setResourceSearch(e.target.value)}
-              className="pl-7 h-7 text-[11px] bg-background/40 border-border/40"
-            />
-          </div>
-        </div>
-        <div className="p-3">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
-            {displayedResources.map((resource) => (
-              <button
-                key={resource}
-                onClick={() => copyToClipboard(resource, 'Resource')}
-                className="px-2 py-1 rounded bg-background/40 border border-border/30 hover:border-[hsl(var(--green))]/40 hover:bg-background/60 text-[10.5px] font-mono text-foreground/80 hover:text-foreground transition-colors text-left truncate"
-              >
-                {resource}
-              </button>
-            ))}
-          </div>
-          {filteredResources.length > 18 && (
-            <button
-              onClick={() => setShowAllResources(!showAllResources)}
-              className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-[hsl(var(--green))] mx-auto transition-colors"
-            >
-              {showAllResources ? (
-                <>Show less <ChevronUp className="w-3.5 h-3.5" /></>
-              ) : (
-                <>Show all {filteredResources.length} <ChevronDown className="w-3.5 h-3.5" /></>
-              )}
-            </button>
-          )}
-        </div>
-      </section>
-
+      {/* Unified Resource Explorer */}
+      {data.resources && data.resources.length > 0 && (
+        <ResourceExplorer resources={data.resources} />
+      )}
 
       {/* Server Owner Card */}
       <ServerOwnerCard
@@ -1291,11 +1242,6 @@ const ServerDetails = ({
             ))}
           </div>
         </section>
-      )}
-
-      {/* Resource Inspector */}
-      {data.resources && data.resources.length > 0 && (
-        <ResourceInspector resources={data.resources} />
       )}
 
 
