@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   Info,
   ShieldCheck,
-  Eye,
+  
   Lock,
   Unlock,
   Activity,
