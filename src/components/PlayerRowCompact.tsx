@@ -142,6 +142,7 @@ const PlayerRowCompact = ({
   const [expanded, setExpanded] = useState(false);
   const [showCheaterDialog, setShowCheaterDialog] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const { isAdmin } = useAdminStatus();
   const { isEnabled: streamerMode } = useStreamerMode();
 
