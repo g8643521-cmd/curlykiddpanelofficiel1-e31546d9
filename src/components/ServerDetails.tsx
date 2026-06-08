@@ -45,9 +45,8 @@ import NotificationSettingsDialog from "@/components/NotificationSettingsDialog"
 import PlayerRowCompact, { PLAYER_ROW_GRID } from "@/components/PlayerRowCompact";
 import CheaterWarningBanner from "@/components/CheaterWarningBanner";
 import SensitiveText from "@/components/SensitiveText";
-import ResourceCategories from "@/components/ResourceCategories";
 import ServerOwnerCard from "@/components/ServerOwnerCard";
-import ResourceInspector from "@/components/ResourceInspector";
+import ResourceExplorer from "@/components/ResourceExplorer";
 
 
 import { useAdminStatus } from "@/hooks/useAdminStatus";
