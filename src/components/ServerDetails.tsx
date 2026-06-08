@@ -93,12 +93,9 @@ const ServerDetails = ({
   isPolling,
   onRefresh,
 }: ServerDetailsProps) => {
-  const [resourceSearch, setResourceSearch] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [playerSort, setPlayerSort] = useState<"name" | "id" | "ping">("name");
-  const [showAllResources, setShowAllResources] = useState(false);
   const [bannerError, setBannerError] = useState(false);
-  const [showAllSideResources, setShowAllSideResources] = useState(false);
   const autoTrackingDone = useRef(false);
   const data = useMemo(
     () => ({
