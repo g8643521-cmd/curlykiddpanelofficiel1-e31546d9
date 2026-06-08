@@ -17,6 +17,8 @@ import { usePresence } from "@/hooks/usePresence";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import { ErrorCard } from "@/components/feedback/ErrorCard";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
+
 // Lazy-load heavy components
 const CosmicNebulaBackground = lazy(() => import("@/components/CosmicNebulaBackground"));
 const ServerDetails = lazy(() => import("@/components/ServerDetails"));
