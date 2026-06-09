@@ -690,6 +690,22 @@ const ServerDetails = ({
               hint: `${playerPercentage.toFixed(0)}%`,
               mono: true,
             });
+            if (typeof data.clientsRuntime === "number")
+              kpis.push({
+                label: "Runtime Clients",
+                value: data.clientsRuntime,
+                icon: Activity,
+                hint: data.svMaxclientsRuntime ? `max ${data.svMaxclientsRuntime}` : undefined,
+                mono: true,
+              });
+            if (typeof data.queueCount === "number" && data.queueCount > 0)
+              kpis.push({
+                label: "Queue",
+                value: data.queueCount,
+                icon: Users,
+                tone: "hsl(var(--yellow))",
+                mono: true,
+              });
             if (avgPing > 0)
               kpis.push({
                 label: "Avg Ping",
@@ -699,12 +715,57 @@ const ServerDetails = ({
                 tone: pingTone,
                 mono: true,
               });
+            if (typeof data.responseTime === "number")
+              kpis.push({
+                label: "Response",
+                value: `${data.responseTime}ms`,
+                icon: Activity,
+                mono: true,
+                tone: data.responseTime < 100 ? "hsl(var(--green))" : data.responseTime < 250 ? "hsl(var(--yellow))" : "hsl(var(--red))",
+              });
             kpis.push({
               label: "Access",
               value: data.private ? "Private" : "Public",
               icon: data.private ? Lock : Unlock,
               tone: data.private ? "hsl(var(--red))" : "hsl(var(--green))",
             });
+            if (data.enhancedHostSupport)
+              kpis.push({
+                label: "Host Support",
+                value: "Enhanced",
+                icon: ShieldCheck,
+                tone: "hsl(var(--green))",
+              });
+            if (data.supportStatus)
+              kpis.push({
+                label: "Support",
+                value: <span className="capitalize">{data.supportStatus}</span>,
+                icon: Info,
+              });
+            if (data.endpointCapabilities) {
+              const cap = data.endpointCapabilities;
+              const ok = (cap.infoJson ? 1 : 0) + (cap.dynamicJson ? 1 : 0) + (cap.playersJson ? 1 : 0);
+              kpis.push({
+                label: "Endpoints",
+                value: `${ok}/3 open`,
+                icon: Wifi,
+                hint: `${cap.infoJson ? "i" : "·"}${cap.dynamicJson ? "d" : "·"}${cap.playersJson ? "p" : "·"}`,
+                tone: ok === 3 ? "hsl(var(--green))" : ok === 0 ? "hsl(var(--red))" : "hsl(var(--yellow))",
+                mono: true,
+              });
+            }
+            if (data.lastSeen) {
+              try {
+                const d = new Date(data.lastSeen);
+                if (!isNaN(d.getTime())) {
+                  kpis.push({
+                    label: "Last Seen",
+                    value: formatDistanceToNow(d, { addSuffix: true }),
+                    icon: Clock,
+                  });
+                }
+              } catch { /* ignore */ }
+            }
             if (data.ownerName)
               kpis.push({
                 label: "Developer",
@@ -819,151 +880,22 @@ const ServerDetails = ({
               )}
             </div>
           )}
+
+          {/* Project description — inline */}
+          {data.projectDesc && (
+            <div className="px-5 py-2.5 border-t border-border/30 bg-background/5 flex items-start gap-2">
+              <Info className="w-3 h-3 text-muted-foreground mt-0.5 shrink-0" />
+              <p className="text-[11px] leading-relaxed text-foreground/80">
+                {data.projectDesc}
+              </p>
+            </div>
+          )}
         </div>
 
       </div>
 
 
 
-      {/* Project Description */}
-      {data.projectDesc && (
-        <div className="glass-card p-4">
-          <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">About This Server</p>
-              <p className="text-sm text-foreground">{data.projectDesc}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {/* Server Snapshot — compact KPI tiles with status + context */}
-      <div className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
-        <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/70 via-[hsl(var(--green))]/30 to-transparent" />
-        <div className="flex items-center justify-between px-5 py-2.5 border-b border-border/30 bg-background/20">
-          <div className="flex items-center gap-2">
-            <Server className="w-3.5 h-3.5 text-[hsl(var(--green))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">Server Snapshot</h3>
-            <span className="text-[9px] font-mono text-muted-foreground/70 border-l border-border/40 pl-3">
-              Real-time configuration
-            </span>
-          </div>
-          <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
-            SVR · {(serverCode || 'unknown').toUpperCase()}
-          </span>
-        </div>
-        {(() => {
-          type Tile = {
-            label: string;
-            value: React.ReactNode;
-            context?: React.ReactNode;
-            status?: { tone: string; label: string };
-            icon: React.ComponentType<{ className?: string }>;
-          };
-          const tiles: Tile[] = [
-            {
-              label: 'Game Build',
-              value: data.enforceGameBuild ? `b${data.enforceGameBuild}` : 'Default',
-              context: data.enforceGameBuild ? 'Enforced' : 'No enforcement',
-              status: data.enforceGameBuild
-                ? { tone: 'hsl(var(--green))', label: 'Locked' }
-                : { tone: 'hsl(var(--muted-foreground))', label: 'Open' },
-              icon: Hash,
-            },
-            {
-              label: 'OneSync',
-              value: data.onesyncEnabled ? 'Enabled' : 'Disabled',
-              context: data.onesyncEnabled ? 'Modern netcode' : 'Legacy netcode',
-              status: data.onesyncEnabled
-                ? { tone: 'hsl(var(--green))', label: 'Active' }
-                : { tone: 'hsl(var(--muted-foreground))', label: 'Off' },
-              icon: Layers,
-            },
-            {
-              label: 'Script Hook',
-              value: data.scriptHookAllowed ? 'Allowed' : 'Blocked',
-              context: data.scriptHookAllowed ? 'Mods permitted' : 'Mods denied',
-              status: data.scriptHookAllowed
-                ? { tone: 'hsl(var(--orange))', label: 'Allowed' }
-                : { tone: 'hsl(var(--green))', label: 'Protected' },
-              icon: ShieldCheck,
-            },
-            {
-              label: 'Pure Level',
-              value: data.pureLevel || '0',
-              context:
-                data.pureLevel === '2'
-                  ? 'Strict integrity'
-                  : data.pureLevel === '1'
-                    ? 'Verified files'
-                    : 'No enforcement',
-              status:
-                data.pureLevel === '2'
-                  ? { tone: 'hsl(var(--green))', label: 'Strict' }
-                  : data.pureLevel === '1'
-                    ? { tone: 'hsl(var(--yellow))', label: 'Soft' }
-                    : { tone: 'hsl(var(--muted-foreground))', label: 'None' },
-              icon: ShieldCheck,
-            },
-            {
-              label: 'Premium',
-              value: <span className="capitalize">{data.premiumTier || 'None'}</span>,
-              context: data.premiumTier ? 'CFX boost active' : 'Free tier',
-              status: data.premiumTier
-                ? { tone: 'hsl(var(--yellow))', label: 'Boosted' }
-                : { tone: 'hsl(var(--muted-foreground))', label: 'Free' },
-              icon: Star,
-            },
-            {
-              label: 'Anti-Cheat',
-              value:
-                detectedAntiCheats.length > 0
-                  ? detectedAntiCheats.map((a) => a.name).join(' · ')
-                  : 'None detected',
-              context: `${detectedAntiCheats.length} detected in resources`,
-              status:
-                detectedAntiCheats.length > 0
-                  ? { tone: 'hsl(var(--green))', label: 'Active' }
-                  : { tone: 'hsl(var(--muted-foreground))', label: 'Unknown' },
-              icon: ShieldCheck,
-            },
-          ];
-          return (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-x divide-y md:divide-y-0 divide-border/20">
-              {tiles.map((t, i) => (
-                <div key={i} className="px-4 py-3 hover:bg-background/30 transition-colors">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                      {t.label}
-                    </span>
-                    <t.icon className="w-3 h-3 text-muted-foreground/70" />
-                  </div>
-                  <div className="text-sm font-bold text-foreground truncate leading-tight">
-                    {t.value}
-                  </div>
-                  <div className="flex items-center justify-between mt-1.5 text-[9px]">
-                    <span className="text-muted-foreground/80 truncate">{t.context}</span>
-                    {t.status && (
-                      <span
-                        className="inline-flex items-center gap-1 font-bold uppercase tracking-wider shrink-0 ml-1"
-                        style={{ color: t.status.tone }}
-                      >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ background: t.status.tone }}
-                        />
-                        {t.status.label}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
-      </div>
 
 
       {/* ============ ONLINE PLAYERS — FLAGSHIP ============ */}
@@ -1203,38 +1135,114 @@ const ServerDetails = ({
         ownerAvatar={data.ownerAvatar}
       />
 
-      {/* ============ LOCATION ============ */}
-      {data.location && (
+      {/* ============ INFRASTRUCTURE + ENDPOINT INTELLIGENCE ============ */}
+      {(() => {
+        const loc = data.location;
+        const locItems = loc
+          ? [
+              { label: "Country", value: loc.country, icon: MapPin },
+              { label: "Region", value: loc.region, icon: MapPin },
+              { label: "City", value: loc.city, icon: MapPin },
+              { label: "ISP", value: loc.isp, icon: Wifi },
+            ].filter((i) => i.value && !/^unknown( provider)?$/i.test(String(i.value).trim()))
+          : [];
+        const netItems: { label: string; value: React.ReactNode; icon: typeof Wifi; mono?: boolean }[] = [];
+        if (data.ip) netItems.push({ label: "IP", value: data.ip, icon: Wifi, mono: true });
+        if (data.port) netItems.push({ label: "Port", value: data.port, icon: Hash, mono: true });
+        if (data.endpointCapabilities) {
+          const c = data.endpointCapabilities;
+          netItems.push({
+            label: "info.json",
+            value: c.infoJson ? "Open" : "Closed",
+            icon: c.infoJson ? Unlock : Lock,
+            mono: true,
+          });
+          netItems.push({
+            label: "dynamic.json",
+            value: c.dynamicJson ? "Open" : "Closed",
+            icon: c.dynamicJson ? Unlock : Lock,
+            mono: true,
+          });
+          netItems.push({
+            label: "players.json",
+            value: c.playersJson ? "Open" : "Closed",
+            icon: c.playersJson ? Unlock : Lock,
+            mono: true,
+          });
+        }
+        if (locItems.length === 0 && netItems.length === 0) return null;
+        return (
+          <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
+            <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-border/30 bg-background/20">
+              <Globe className="w-4 h-4 text-[hsl(var(--green))]" />
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
+                Infrastructure & Endpoints
+              </h3>
+              <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3">
+                {locItems.length + netItems.length} fields
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 divide-x divide-y divide-border/20">
+              {[...locItems, ...netItems].map((c, i) => (
+                <div key={`${c.label}-${i}`} className="px-3 py-2.5">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <c.icon className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {c.label}
+                    </span>
+                  </div>
+                  <p className={`text-[12px] font-medium text-foreground truncate ${(c as { mono?: boolean }).mono ? "font-mono" : ""}`}>
+                    {c.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ============ RAW SERVER VARS — deep inspection ============ */}
+      {data.vars && Object.keys(data.vars).length > 0 && (
         <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
           <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-border/30 bg-background/20">
-            <Globe className="w-4 h-4 text-[hsl(var(--green))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
-              Infrastructure
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border/20">
-            {[
-              { label: "Country", value: data.location.country, icon: MapPin },
-              { label: "Region", value: data.location.region, icon: MapPin },
-              { label: "City", value: data.location.city, icon: MapPin },
-              { label: "ISP", value: data.location.isp, icon: Wifi },
-            ].map((c) => (
-              <div key={c.label} className="px-4 py-3">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <c.icon className="w-3 h-3 text-muted-foreground" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {c.label}
-                  </span>
-                </div>
-                <p className="text-sm font-medium text-foreground truncate">{c.value}</p>
+          <details className="group">
+            <summary className="flex items-center justify-between gap-2 px-5 py-3 border-b border-border/30 bg-background/20 cursor-pointer list-none">
+              <div className="flex items-center gap-2">
+                <Hash className="w-4 h-4 text-[hsl(var(--green))]" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
+                  Server Variables
+                </h3>
+                <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3">
+                  {Object.keys(data.vars).length} keys · sv_* / config
+                </span>
               </div>
-            ))}
-          </div>
+              <span className="text-[10px] font-mono text-muted-foreground group-open:hidden">expand ▾</span>
+              <span className="text-[10px] font-mono text-muted-foreground hidden group-open:inline">collapse ▴</span>
+            </summary>
+            <div className="max-h-[480px] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:[&>*:nth-child(odd)]:border-r divide-border/20">
+                {Object.entries(data.vars)
+                  .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "")
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([k, v]) => (
+                    <button
+                      key={k}
+                      onClick={() => copyToClipboard(String(v), k)}
+                      className="group/row flex items-center justify-between gap-3 px-4 py-2 hover:bg-background/30 transition-colors text-left border-b border-border/20"
+                    >
+                      <span className="text-[10px] font-mono text-muted-foreground truncate shrink-0">{k}</span>
+                      <span className="text-[11px] font-mono text-foreground/90 truncate min-w-0 flex-1 text-right">
+                        {String(v)}
+                      </span>
+                      <Copy className="w-3 h-3 text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity shrink-0" />
+                    </button>
+                  ))}
+              </div>
+            </div>
+          </details>
         </section>
       )}
-
-
 
     </div>
   );
