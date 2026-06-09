@@ -64,7 +64,7 @@ const Dashboard = () => {
   const handleServerSelect = useCallback(async (serverCode: string) => {
     await fetchServerData(serverCode);
     await refetchHistory();
-    navigate(`/dashboard/${serverCode}`, { replace: true });
+    navigate(`/server-details/${serverCode}`, { replace: true });
   }, [fetchServerData, refetchHistory, navigate]);
 
   const refreshCurrentServer = useCallback(async () => {
@@ -108,7 +108,7 @@ const Dashboard = () => {
     
     if (queryServerCode) {
       fetchServerData(queryServerCode);
-      navigate(`/dashboard/${queryServerCode}`, { replace: true });
+      navigate(`/server-details/${queryServerCode}`, { replace: true });
     } else if (showTour) {
       navigate('/dashboard', { replace: true });
     }
@@ -138,7 +138,7 @@ const Dashboard = () => {
   const pageDesc = serverData && lastSearchedCode
     ? `${serverData.playerCount ?? serverData.players?.length ?? 0}/${serverData.maxPlayers} players · ${serverData.gametype || 'FiveM'} · cfx.re/join/${lastSearchedCode}`
     : 'Your CurlyKiddPanel dashboard with FiveM server lookup, favorites, recent searches and the latest community mods.';
-  const pagePath = lastSearchedCode ? `/dashboard/${lastSearchedCode}` : '/dashboard';
+  const pagePath = lastSearchedCode ? `/server-details/${lastSearchedCode}` : '/dashboard';
 
   usePageMeta({
     title: pageTitle,
