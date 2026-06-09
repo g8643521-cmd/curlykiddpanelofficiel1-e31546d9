@@ -108,7 +108,7 @@ const Dashboard = () => {
     
     if (queryServerCode) {
       fetchServerData(queryServerCode);
-      navigate(`/dashboard/${queryServerCode}`, { replace: true });
+      navigate(`/server-details/${queryServerCode}`, { replace: true });
     } else if (showTour) {
       navigate('/dashboard', { replace: true });
     }
