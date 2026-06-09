@@ -1135,38 +1135,114 @@ const ServerDetails = ({
         ownerAvatar={data.ownerAvatar}
       />
 
-      {/* ============ LOCATION ============ */}
-      {data.location && (
+      {/* ============ INFRASTRUCTURE + ENDPOINT INTELLIGENCE ============ */}
+      {(() => {
+        const loc = data.location;
+        const locItems = loc
+          ? [
+              { label: "Country", value: loc.country, icon: MapPin },
+              { label: "Region", value: loc.region, icon: MapPin },
+              { label: "City", value: loc.city, icon: MapPin },
+              { label: "ISP", value: loc.isp, icon: Wifi },
+            ].filter((i) => i.value && !/^unknown( provider)?$/i.test(String(i.value).trim()))
+          : [];
+        const netItems: { label: string; value: React.ReactNode; icon: typeof Wifi; mono?: boolean }[] = [];
+        if (data.ip) netItems.push({ label: "IP", value: data.ip, icon: Wifi, mono: true });
+        if (data.port) netItems.push({ label: "Port", value: data.port, icon: Hash, mono: true });
+        if (data.endpointCapabilities) {
+          const c = data.endpointCapabilities;
+          netItems.push({
+            label: "info.json",
+            value: c.infoJson ? "Open" : "Closed",
+            icon: c.infoJson ? Unlock : Lock,
+            mono: true,
+          });
+          netItems.push({
+            label: "dynamic.json",
+            value: c.dynamicJson ? "Open" : "Closed",
+            icon: c.dynamicJson ? Unlock : Lock,
+            mono: true,
+          });
+          netItems.push({
+            label: "players.json",
+            value: c.playersJson ? "Open" : "Closed",
+            icon: c.playersJson ? Unlock : Lock,
+            mono: true,
+          });
+        }
+        if (locItems.length === 0 && netItems.length === 0) return null;
+        return (
+          <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
+            <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-border/30 bg-background/20">
+              <Globe className="w-4 h-4 text-[hsl(var(--green))]" />
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
+                Infrastructure & Endpoints
+              </h3>
+              <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3">
+                {locItems.length + netItems.length} fields
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 divide-x divide-y divide-border/20">
+              {[...locItems, ...netItems].map((c, i) => (
+                <div key={`${c.label}-${i}`} className="px-3 py-2.5">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <c.icon className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {c.label}
+                    </span>
+                  </div>
+                  <p className={`text-[12px] font-medium text-foreground truncate ${(c as { mono?: boolean }).mono ? "font-mono" : ""}`}>
+                    {c.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ============ RAW SERVER VARS — deep inspection ============ */}
+      {data.vars && Object.keys(data.vars).length > 0 && (
         <section className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
           <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--green))]/40 via-[hsl(var(--green))]/15 to-transparent" />
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-border/30 bg-background/20">
-            <Globe className="w-4 h-4 text-[hsl(var(--green))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
-              Infrastructure
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border/20">
-            {[
-              { label: "Country", value: data.location.country, icon: MapPin },
-              { label: "Region", value: data.location.region, icon: MapPin },
-              { label: "City", value: data.location.city, icon: MapPin },
-              { label: "ISP", value: data.location.isp, icon: Wifi },
-            ].map((c) => (
-              <div key={c.label} className="px-4 py-3">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <c.icon className="w-3 h-3 text-muted-foreground" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {c.label}
-                  </span>
-                </div>
-                <p className="text-sm font-medium text-foreground truncate">{c.value}</p>
+          <details className="group">
+            <summary className="flex items-center justify-between gap-2 px-5 py-3 border-b border-border/30 bg-background/20 cursor-pointer list-none">
+              <div className="flex items-center gap-2">
+                <Hash className="w-4 h-4 text-[hsl(var(--green))]" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
+                  Server Variables
+                </h3>
+                <span className="text-[10px] font-mono text-muted-foreground border-l border-border/40 pl-3">
+                  {Object.keys(data.vars).length} keys · sv_* / config
+                </span>
               </div>
-            ))}
-          </div>
+              <span className="text-[10px] font-mono text-muted-foreground group-open:hidden">expand ▾</span>
+              <span className="text-[10px] font-mono text-muted-foreground hidden group-open:inline">collapse ▴</span>
+            </summary>
+            <div className="max-h-[480px] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:[&>*:nth-child(odd)]:border-r divide-border/20">
+                {Object.entries(data.vars)
+                  .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "")
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([k, v]) => (
+                    <button
+                      key={k}
+                      onClick={() => copyToClipboard(String(v), k)}
+                      className="group/row flex items-center justify-between gap-3 px-4 py-2 hover:bg-background/30 transition-colors text-left border-b border-border/20"
+                    >
+                      <span className="text-[10px] font-mono text-muted-foreground truncate shrink-0">{k}</span>
+                      <span className="text-[11px] font-mono text-foreground/90 truncate min-w-0 flex-1 text-right">
+                        {String(v)}
+                      </span>
+                      <Copy className="w-3 h-3 text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity shrink-0" />
+                    </button>
+                  ))}
+              </div>
+            </div>
+          </details>
         </section>
       )}
-
-
 
     </div>
   );
