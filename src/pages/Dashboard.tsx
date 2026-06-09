@@ -138,7 +138,7 @@ const Dashboard = () => {
   const pageDesc = serverData && lastSearchedCode
     ? `${serverData.playerCount ?? serverData.players?.length ?? 0}/${serverData.maxPlayers} players · ${serverData.gametype || 'FiveM'} · cfx.re/join/${lastSearchedCode}`
     : 'Your CurlyKiddPanel dashboard with FiveM server lookup, favorites, recent searches and the latest community mods.';
-  const pagePath = lastSearchedCode ? `/dashboard/${lastSearchedCode}` : '/dashboard';
+  const pagePath = lastSearchedCode ? `/server-details/${lastSearchedCode}` : '/dashboard';
 
   usePageMeta({
     title: pageTitle,
