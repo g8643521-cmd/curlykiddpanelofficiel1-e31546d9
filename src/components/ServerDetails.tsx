@@ -690,6 +690,22 @@ const ServerDetails = ({
               hint: `${playerPercentage.toFixed(0)}%`,
               mono: true,
             });
+            if (typeof data.clientsRuntime === "number")
+              kpis.push({
+                label: "Runtime Clients",
+                value: data.clientsRuntime,
+                icon: Activity,
+                hint: data.svMaxclientsRuntime ? `max ${data.svMaxclientsRuntime}` : undefined,
+                mono: true,
+              });
+            if (typeof data.queueCount === "number" && data.queueCount > 0)
+              kpis.push({
+                label: "Queue",
+                value: data.queueCount,
+                icon: Users,
+                tone: "hsl(var(--yellow))",
+                mono: true,
+              });
             if (avgPing > 0)
               kpis.push({
                 label: "Avg Ping",
@@ -699,12 +715,57 @@ const ServerDetails = ({
                 tone: pingTone,
                 mono: true,
               });
+            if (typeof data.responseTime === "number")
+              kpis.push({
+                label: "Response",
+                value: `${data.responseTime}ms`,
+                icon: Activity,
+                mono: true,
+                tone: data.responseTime < 100 ? "hsl(var(--green))" : data.responseTime < 250 ? "hsl(var(--yellow))" : "hsl(var(--red))",
+              });
             kpis.push({
               label: "Access",
               value: data.private ? "Private" : "Public",
               icon: data.private ? Lock : Unlock,
               tone: data.private ? "hsl(var(--red))" : "hsl(var(--green))",
             });
+            if (data.enhancedHostSupport)
+              kpis.push({
+                label: "Host Support",
+                value: "Enhanced",
+                icon: ShieldCheck,
+                tone: "hsl(var(--green))",
+              });
+            if (data.supportStatus)
+              kpis.push({
+                label: "Support",
+                value: <span className="capitalize">{data.supportStatus}</span>,
+                icon: Info,
+              });
+            if (data.endpointCapabilities) {
+              const cap = data.endpointCapabilities;
+              const ok = (cap.infoJson ? 1 : 0) + (cap.dynamicJson ? 1 : 0) + (cap.playersJson ? 1 : 0);
+              kpis.push({
+                label: "Endpoints",
+                value: `${ok}/3 open`,
+                icon: Wifi,
+                hint: `${cap.infoJson ? "i" : "·"}${cap.dynamicJson ? "d" : "·"}${cap.playersJson ? "p" : "·"}`,
+                tone: ok === 3 ? "hsl(var(--green))" : ok === 0 ? "hsl(var(--red))" : "hsl(var(--yellow))",
+                mono: true,
+              });
+            }
+            if (data.lastSeen) {
+              try {
+                const d = new Date(data.lastSeen);
+                if (!isNaN(d.getTime())) {
+                  kpis.push({
+                    label: "Last Seen",
+                    value: formatDistanceToNow(d, { addSuffix: true }),
+                    icon: Clock,
+                  });
+                }
+              } catch { /* ignore */ }
+            }
             if (data.ownerName)
               kpis.push({
                 label: "Developer",
