@@ -64,7 +64,7 @@ const Dashboard = () => {
   const handleServerSelect = useCallback(async (serverCode: string) => {
     await fetchServerData(serverCode);
     await refetchHistory();
-    navigate(`/dashboard/${serverCode}`, { replace: true });
+    navigate(`/server-details/${serverCode}`, { replace: true });
   }, [fetchServerData, refetchHistory, navigate]);
 
   const refreshCurrentServer = useCallback(async () => {
