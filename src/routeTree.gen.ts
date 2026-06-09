@@ -23,6 +23,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserIdRouteImport } from './routes/user.$id'
+import { Route as ServerDetailsServerCodeRouteImport } from './routes/server-details.$serverCode'
 import { Route as EmbedServerCodeRouteImport } from './routes/embed.$serverCode'
 import { Route as ApiPublicDiscordOauthRouteImport } from './routes/api/public/discord-oauth'
 
@@ -96,6 +97,11 @@ const UserIdRoute = UserIdRouteImport.update({
   path: '/user/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServerDetailsServerCodeRoute = ServerDetailsServerCodeRouteImport.update({
+  id: '/server-details/$serverCode',
+  path: '/server-details/$serverCode',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmbedServerCodeRoute = EmbedServerCodeRouteImport.update({
   id: '/embed/$serverCode',
   path: '/embed/$serverCode',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
   '/embed/$serverCode': typeof EmbedServerCodeRoute
+  '/server-details/$serverCode': typeof ServerDetailsServerCodeRoute
   '/user/$id': typeof UserIdRoute
   '/api/public/discord-oauth': typeof ApiPublicDiscordOauthRoute
 }
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
   '/embed/$serverCode': typeof EmbedServerCodeRoute
+  '/server-details/$serverCode': typeof ServerDetailsServerCodeRoute
   '/user/$id': typeof UserIdRoute
   '/api/public/discord-oauth': typeof ApiPublicDiscordOauthRoute
 }
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
   '/embed/$serverCode': typeof EmbedServerCodeRoute
+  '/server-details/$serverCode': typeof ServerDetailsServerCodeRoute
   '/user/$id': typeof UserIdRoute
   '/api/public/discord-oauth': typeof ApiPublicDiscordOauthRoute
 }
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/embed/$serverCode'
+    | '/server-details/$serverCode'
     | '/user/$id'
     | '/api/public/discord-oauth'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/embed/$serverCode'
+    | '/server-details/$serverCode'
     | '/user/$id'
     | '/api/public/discord-oauth'
   id:
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/embed/$serverCode'
+    | '/server-details/$serverCode'
     | '/user/$id'
     | '/api/public/discord-oauth'
   fileRoutesById: FileRoutesById
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   SettingsRoute: typeof SettingsRoute
   EmbedServerCodeRoute: typeof EmbedServerCodeRoute
+  ServerDetailsServerCodeRoute: typeof ServerDetailsServerCodeRoute
   UserIdRoute: typeof UserIdRoute
   ApiPublicDiscordOauthRoute: typeof ApiPublicDiscordOauthRoute
 }
@@ -338,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/server-details/$serverCode': {
+      id: '/server-details/$serverCode'
+      path: '/server-details/$serverCode'
+      fullPath: '/server-details/$serverCode'
+      preLoaderRoute: typeof ServerDetailsServerCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/embed/$serverCode': {
       id: '/embed/$serverCode'
       path: '/embed/$serverCode'
@@ -370,6 +390,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   SettingsRoute: SettingsRoute,
   EmbedServerCodeRoute: EmbedServerCodeRoute,
+  ServerDetailsServerCodeRoute: ServerDetailsServerCodeRoute,
   UserIdRoute: UserIdRoute,
   ApiPublicDiscordOauthRoute: ApiPublicDiscordOauthRoute,
 }
